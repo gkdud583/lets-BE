@@ -16,19 +16,20 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 @Service
 public class TagService {
-    private final TagRepository tagRepository;
+  private final TagRepository tagRepository;
 
-    public Tag findOne(String name){
-        return tagRepository.findByName(name)
-                .orElseThrow(()->new CustomException(ErrorCode.TAG_NOT_FOUND));
-    }
+  public Tag findOne(String name) {
+    return tagRepository
+        .findByName(name)
+        .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+  }
 
-    public List<Tag> findAll(){
-        return tagRepository.findAll();
-    }
+  public List<Tag> findAll() {
+    return tagRepository.findAll();
+  }
 
-    @Transactional
-    public void save(Tag tag){
-        tagRepository.save(tag);
-    }
+  @Transactional
+  public void save(Tag tag) {
+    tagRepository.save(tag);
+  }
 }
