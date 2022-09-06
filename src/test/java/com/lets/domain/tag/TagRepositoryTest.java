@@ -18,40 +18,44 @@ import com.lets.config.QueryDslConfig;
 @DataJpaTest
 @Import(QueryDslConfig.class)
 public class TagRepositoryTest {
-    @Autowired
-    TagRepository tagRepository;
+  @Autowired
+  TagRepository tagRepository;
 
-    @AfterEach
-    public void teardown(){
-        tagRepository.deleteAllInBatch();
-    }
-    @DisplayName("태그 이름으로 태그 단건을 조회합니다.")
-    @Test
-    public void findByName() {
-        //given
-        Tag tag = Tag.createTag("spring");
-        tagRepository.save(tag);
+  @AfterEach
+  public void teardown() {
+    tagRepository.deleteAllInBatch();
+  }
 
-        //when
-        Optional<Tag> findTag = tagRepository.findByName("spring");
+  @DisplayName("태그 이름으로 태그 단건을 조회합니다.")
+  @Test
+  public void findByName() {
+    //given
+    Tag tag = Tag.createTag("spring");
+    tagRepository.save(tag);
 
-        //then
-        assertThat(findTag.get().getId()).isEqualTo(tag.getId());
-    }
-    @DisplayName("태그 이름으로 모든 태그를 조회합니다.")
-    @Test
-    public void findAllByName() {
-        //given
-        Tag tag1 = Tag.createTag("spring");
-        tagRepository.save(tag1);
+    //when
+    Optional<Tag> findTag = tagRepository.findByName("spring");
 
-        Tag tag2 = Tag.createTag("jpa");
-        tagRepository.save(tag2);
+    //then
+    assertThat(findTag
+                   .get()
+                   .getId()).isEqualTo(tag.getId());
+  }
 
-        //when
-        List<Tag> result = tagRepository.findAllByNameIn(Arrays.asList("spring", "jpa"));
+  @DisplayName("태그 이름으로 모든 태그를 조회합니다.")
+  @Test
+  public void findAllByName() {
+    //given
+    Tag tag1 = Tag.createTag("spring");
+    tagRepository.save(tag1);
 
-        //then
-        assertThat(result.size()).isEqualTo(2);
-    }
+    Tag tag2 = Tag.createTag("jpa");
+    tagRepository.save(tag2);
+
+    //when
+    List<Tag> result = tagRepository.findAllByNameIn(Arrays.asList("spring", "jpa"));
+
+    //then
+    assertThat(result.size()).isEqualTo(2);
+  }
 }

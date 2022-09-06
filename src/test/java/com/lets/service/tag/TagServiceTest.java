@@ -1,58 +1,42 @@
 package com.lets.service.tag;
 
-import com.lets.domain.tag.Tag;
-import com.lets.domain.tag.TagRepository;
-import com.lets.exception.CustomException;
-import org.junit.jupiter.api.Assertions;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
+import com.lets.domain.tag.Tag;
+import com.lets.domain.tag.TagRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class TagServiceTest {
-    @InjectMocks
-    TagService tagService;
+  @InjectMocks
+  TagService tagService;
 
-    @Mock
-    TagRepository tagRepository;
+  @Mock
+  TagRepository tagRepository;
 
-    @Test
-    void findOne_TAG_NOT_FOUND_예외(){
-        //given
-        given(tagRepository.findByName(any()))
-                .willReturn(Optional.ofNullable(null));
-        //when
-        Exception exception  = Assertions.assertThrows(CustomException.class, () -> tagService.findOne(any()));
+  @Test
+  void findAll_성공() {
+    //given
+    Tag tag = Tag.createTag("spring");
 
-        //then
-        assertEquals("존재하지 않는 태그입니다.", exception.getMessage());
-    }
+    given(tagRepository.findAll())
+        .willReturn(List.of(tag));
 
-    @Test
-    void findOne_성공(){
-        //given
-        Tag tag = Tag.createTag("spring");
+    //when
+    List<Tag> result = tagService.findAll();
 
-        given(tagRepository.findByName(any()))
-                .willReturn(Optional.of(tag));
-        //when
-        Tag findTag = tagService.findOne(any());
-        //then
-        assertThat(findTag.getName()).isEqualTo("spring");
-    }
-
-
-
-
+    //then
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result
+                   .get(0)
+                   .getName()).isEqualTo(tag.getName());
+  }
 }
