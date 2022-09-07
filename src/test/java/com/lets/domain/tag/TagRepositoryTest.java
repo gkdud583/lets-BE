@@ -26,7 +26,7 @@ public class TagRepositoryTest {
     tagRepository.deleteAllInBatch();
   }
 
-  @DisplayName("태그 이름으로 태그 단건을 조회합니다.")
+  @DisplayName("findByName메서드는 태그 이름으로 태그를 조회한다")
   @Test
   public void findByName() {
     //given
@@ -42,9 +42,9 @@ public class TagRepositoryTest {
                    .getId()).isEqualTo(tag.getId());
   }
 
-  @DisplayName("태그 이름으로 모든 태그를 조회합니다.")
+  @DisplayName("findAllByNameIn메서드는 태그 이름으로 모든 태그를 조회한다")
   @Test
-  public void findAllByName() {
+  public void findAllByNameIn() {
     //given
     Tag tag1 = Tag.createTag("spring");
     tagRepository.save(tag1);

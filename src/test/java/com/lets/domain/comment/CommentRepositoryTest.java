@@ -47,7 +47,7 @@ public class CommentRepositoryTest {
     commentRepository.save(comment);
   }
 
-  @DisplayName("글의 댓글 수를 반환합니다.")
+  @DisplayName("countByPost메서드는 글의 댓글 수를 반환한다")
   @Test
   public void countByPost() {
     //given
@@ -59,7 +59,7 @@ public class CommentRepositoryTest {
     assertThat(count).isEqualTo(1);
   }
 
-  @DisplayName("특정 글의 모든 댓글을 삭제합니다.")
+  @DisplayName("deleteAllByPost메서드는 특정 글의 모든 댓글을 삭제한다")
   @Test
   public void deleteAllByPost() {
     //given
@@ -72,7 +72,7 @@ public class CommentRepositoryTest {
     assertThat(result).isEqualTo(0);
   }
 
-  @DisplayName("모든 댓글을 조회합니다.")
+  @DisplayName("findComments메서드는 모든 댓글을 조회한다")
   @Test
   public void findComments() {
     //given

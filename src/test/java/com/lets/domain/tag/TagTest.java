@@ -1,11 +1,13 @@
 package com.lets.domain.tag;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class TagTest {
     @Test
+    @DisplayName("createTag메서드는 태그를 생성한다")
     public void createTag(){
         //given
         //when

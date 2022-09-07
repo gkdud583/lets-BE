@@ -71,7 +71,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("save메서드는_유저가_존재하지_않는다면_예외를_던진다")
+  @DisplayName("save메서드는 유저가 존재하지 않는다면 예외를 던진다")
   void saveCommentWithNonexistentUser() {
     // given
     long userId = 1l;
@@ -89,7 +89,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("save메서드는_글이_존재하지_않는다면_예외를_던진다")
+  @DisplayName("save메서드는 글이 존재하지 않는다면 예외를 던진다")
   void saveCommentWithNonexistentPost() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
@@ -114,7 +114,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("update메서드는_댓글_내용을_수정하고_수정된_댓글을_반환한다")
+  @DisplayName("update메서드는 댓글 내용을 수정하고 수정된 댓글을 반환한다")
   void updateComment() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
@@ -140,7 +140,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("update메서드는_댓글이_존재하지_않는다면_예외를_던진다")
+  @DisplayName("update메서드는 댓글이 존재하지 않는다면 예외를 던진다")
   void updateCommentWithNonexistentComment() {
     // given
     long commentId = 1l;
@@ -159,7 +159,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("delete메서드는_댓글을_삭제한다")
+  @DisplayName("delete메서드는 댓글을 삭제한다")
   void deleteComment() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
@@ -180,7 +180,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("delete메서드는_댓글이_존재하지_않는다면_예외를_던진다")
+  @DisplayName("delete메서드는 댓글이 존재하지 않는다면 예외를 던진다")
   void deleteCommentWithNonexistentComment() {
     // given
     long commentId = 1l;
@@ -196,7 +196,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("findById메서드는_아이디로_댓글을_조회한다")
+  @DisplayName("findById메서드는 아이디로 댓글을 조회한다")
   void findById() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
@@ -218,7 +218,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("findById메서드는_댓글이_존재하지_않는다면_예외를_던진다")
+  @DisplayName("findById메서드는 댓글이 존재하지 않는다면 예외를 던진다")
   void findByIdNonexistentComment() {
     // given
     long commentId = 1l;

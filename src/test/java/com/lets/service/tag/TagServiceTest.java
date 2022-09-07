@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.List;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +24,8 @@ public class TagServiceTest {
   TagRepository tagRepository;
 
   @Test
-  void findAll_성공() {
+  @DisplayName("findAll메서드는 모든 태그 이름을 반환한다")
+  void findAll() {
     //given
     Tag tag = Tag.createTag("spring");
 

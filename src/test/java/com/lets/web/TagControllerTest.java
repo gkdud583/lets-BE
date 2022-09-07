@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -55,7 +56,8 @@ public class TagControllerTest {
   }
 
   @Test
-  void 태그_조회_성공() {
+  @DisplayName("findAll메서드는 모든 태그 이름을 반환한다")
+  void findAll() {
     //given
     String url = "http://localhost:" + port + "/api/tags";
 

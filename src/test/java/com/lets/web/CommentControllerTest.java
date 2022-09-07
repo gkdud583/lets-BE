@@ -9,6 +9,7 @@ import javax.servlet.http.Cookie;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,7 +158,8 @@ class CommentControllerTest {
   }
 
   @Test
-  void 코멘트_등록_테스트() throws URISyntaxException {
+  @DisplayName("save메서드는 댓글을 저장한다")
+  void save() throws URISyntaxException {
     Long postId = postRepository
         .findAll()
         .get(0)
@@ -187,7 +189,8 @@ class CommentControllerTest {
   }
 
   @Test
-  void 코멘드_수정_테스트() throws URISyntaxException {
+  @DisplayName("update메서드는 댓글 내용을 수정한다")
+  void update() throws URISyntaxException {
     Long postId = postRepository
         .findAll()
         .get(0)
@@ -220,7 +223,8 @@ class CommentControllerTest {
   }
 
   @Test
-  void 코멘트_삭제_테스트() {
+  @DisplayName("delete메서드는 댓글을 삭제한다")
+  void delete() {
     Long postId = postRepository
         .findAll()
         .get(0)
