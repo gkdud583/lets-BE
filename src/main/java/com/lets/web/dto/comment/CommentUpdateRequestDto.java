@@ -1,19 +1,15 @@
 package com.lets.web.dto.comment;
 
-import com.lets.domain.comment.Comment;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 public class CommentUpdateRequestDto {
-    private String content;
+  private String content;
 
-    public CommentUpdateRequestDto(String content){
-        this.content = content;
-    }
-
-    public void changeComment(Comment comment){
-        comment.change(content);
-    }
+  @JsonCreator
+  public CommentUpdateRequestDto(String content) {
+    this.content = content;
+  }
 }
