@@ -51,6 +51,33 @@ values (now(), now(), 'content1', 1, 'RECRUITING', 'title1', 1, 1);
 insert into post(created_date, modified_date, content, like_count, status, title, view_count,
                  user_id)
 values (now(), now(), 'content2', 1, 'RECRUITING', 'title2', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content3', 1, 'RECRUITING', 'title3', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content4', 1, 'RECRUITING', 'title4', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content5', 1, 'RECRUITING', 'title5', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content6', 1, 'RECRUITING', 'title6', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content7', 1, 'RECRUITING', 'title7', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content8', 1, 'RECRUITING', 'title8', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content9', 1, 'RECRUITING', 'title9', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content10', 1, 'RECRUITING', 'title10', 1, 1);
+insert into post(created_date, modified_date, content, like_count, status, title, view_count,
+                 user_id)
+values (now(), now(), 'content11', 1, 'RECRUITING', 'title11', 1, 1);
 
 
 insert into POST_TECH_STACK(created_date, modified_date, tag_id, post_id)
@@ -58,7 +85,5 @@ values (now(), now(), 1, 1);
 insert into POST_TECH_STACK(created_date, modified_date, tag_id, post_id)
 values (now(), now(), 2, 2);
 
-insert into LIKE_POST(created_date, modified_date, post_id, user_id, status)
-values (now(), now(), 1, 1, 'ACTIVE');
 insert into LIKE_POST(created_date, modified_date, post_id, user_id, status)
 values (now(), now(), 1, 1, 'ACTIVE');
