@@ -1,4 +1,4 @@
-package com.lets.security.oauth2;
+package com.lets.security;
 
 
 public enum AuthProvider {

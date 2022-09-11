@@ -1,11 +1,12 @@
 package com.lets.domain.post;
 
-import com.lets.domain.comment.Comment;
-import com.lets.domain.user.User;
-import com.lets.security.oauth2.AuthProvider;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.lets.domain.comment.Comment;
+import com.lets.domain.user.User;
+import com.lets.security.AuthProvider;
 
 public class PostTest {
     @Test

@@ -1,13 +1,11 @@
 package com.lets.domain.likepost;
 
-import com.lets.config.QueryDslConfig;
-import com.lets.domain.likePost.LikePost;
-import com.lets.domain.likePost.LikePostRepository;
-import com.lets.domain.post.Post;
-import com.lets.domain.post.PostRepository;
-import com.lets.domain.user.User;
-import com.lets.domain.user.UserRepository;
-import com.lets.security.oauth2.AuthProvider;
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,11 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.lets.config.QueryDslConfig;
+import com.lets.domain.likePost.LikePost;
+import com.lets.domain.likePost.LikePostRepository;
+import com.lets.domain.post.Post;
+import com.lets.domain.post.PostRepository;
+import com.lets.domain.user.User;
+import com.lets.domain.user.UserRepository;
+import com.lets.security.AuthProvider;
 
 @DataJpaTest
 @Import(QueryDslConfig.class)

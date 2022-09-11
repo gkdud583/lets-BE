@@ -48,7 +48,7 @@ public class UserController {
   public List<PostResponseDto> findMyPosts(@AuthenticationPrincipal UserPrincipal principal) {
 
     //유저 조회
-    User findUser = userService.findOneById(principal.getId());
+    User findUser = userService.findById(principal.getId());
 
     //작성 글 조회
     return postService.findPosts(findUser);
@@ -63,7 +63,7 @@ public class UserController {
   public List<LikePostResponseDto> findMyLikes(@AuthenticationPrincipal UserPrincipal principal) {
 
     //유저 조회
-    User findUser = userService.findOneById(principal.getId());
+    User findUser = userService.findById(principal.getId());
 
     //관심 글 조회
     return likePostService.findLikePosts(findUser);
@@ -74,7 +74,7 @@ public class UserController {
   @PreAuthorize("hasRole('ROLE_USER')")
   public SettingResponseDto getSetting(@AuthenticationPrincipal UserPrincipal principal) {
     //유저 정보 조회
-    User findUser = userService.findOneById(principal.getId());
+    User findUser = userService.findById(principal.getId());
 
     //유저 태그 정보 조회
     List<UserTechStack> userTechStacks = userTechStackService.findAllByUser(findUser);
@@ -107,7 +107,7 @@ public class UserController {
     }
 
     //유저 조회
-    User findUser = userService.findOneById(principal.getId());
+    User findUser = userService.findById(principal.getId());
 
     //설정 변경
     userService.change(findUser, profileStatus, file, settingDto);

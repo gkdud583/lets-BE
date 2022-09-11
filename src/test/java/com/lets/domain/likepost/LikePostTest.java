@@ -1,13 +1,14 @@
 package com.lets.domain.likepost;
 
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
 import com.lets.domain.likePost.LikePost;
 import com.lets.domain.likePost.LikePostStatus;
 import com.lets.domain.post.Post;
 import com.lets.domain.user.User;
-import com.lets.security.oauth2.AuthProvider;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.lets.security.AuthProvider;
 
 public class LikePostTest {
 

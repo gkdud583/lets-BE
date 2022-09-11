@@ -1,11 +1,11 @@
 package com.lets.web.dto.user;
 
+import javax.validation.constraints.NotBlank;
 
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @AllArgsConstructor

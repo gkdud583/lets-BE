@@ -1,4 +1,4 @@
-package com.lets.web.dto.auth;
+package com.lets.web.dto.comment.auth;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,4 +20,3 @@ public class SigninResponseDto {
         this.message = message;
     }
 }
-

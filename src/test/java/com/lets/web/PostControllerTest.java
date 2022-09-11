@@ -1,5 +1,32 @@
 package com.lets.web;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.net.URI;
+import java.util.List;
+
+import javax.servlet.http.Cookie;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lets.domain.comment.Comment;
 import com.lets.domain.comment.CommentRepository;
@@ -15,10 +42,10 @@ import com.lets.domain.tag.Tag;
 import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
+import com.lets.security.AuthProvider;
 import com.lets.security.JwtAuthentication;
 import com.lets.security.JwtTokenProvider;
 import com.lets.security.UserPrincipal;
-import com.lets.security.oauth2.AuthProvider;
 import com.lets.service.likePost.LikePostService;
 import com.lets.service.post.PostService;
 import com.lets.service.postTechStack.PostTechStackService;
@@ -26,31 +53,12 @@ import com.lets.service.tag.TagService;
 import com.lets.service.user.UserService;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
-import com.lets.web.dto.*;
+import com.lets.web.dto.ApiResponseDto;
 import com.lets.web.dto.likepost.ChangeLikePostStatusResponseDto;
+import com.lets.web.dto.post.PostRecommendResponseDto;
 import com.lets.web.dto.post.PostResponseDto;
 import com.lets.web.dto.post.PostSaveRequestDto;
 import com.lets.web.dto.post.PostUpdateRequestDto;
-import com.lets.web.dto.post.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-
-import javax.servlet.http.Cookie;
-import java.net.URI;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -127,10 +135,10 @@ public class PostControllerTest {
         Tag tag3 = Tag.createTag("python");
         Tag tag4 = Tag.createTag("c");
 
-        tagService.save(tag1);
-        tagService.save(tag2);
-        tagService.save(tag3);
-        tagService.save(tag4);
+        tagRepository.save(tag1);
+        tagRepository.save(tag2);
+        tagRepository.save(tag3);
+        tagRepository.save(tag4);
 
         Post post1 = Post.createPost(user, "title1", "content1");
         Post post2 = Post.createPost(user2, "title2", "content2");

@@ -82,7 +82,7 @@ public class PostCommentResponseDto {
     List<CommentResponseDto> commentList = new ArrayList<>();
 
     for (Comment comment : comments) {
-      commentList.add(new CommentResponseDto(comment,
+      commentList.add(CommentResponseDto.from(comment,
           cloudinaryUtil.findFileURL(comment.getUser().getPublicId())));
     }
 

@@ -1,15 +1,5 @@
 package com.lets.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lets.security.JwtAuthenticationFilter;
-import com.lets.security.JwtTokenProvider;
-import com.lets.security.RestAuthenticationEntryPoint;
-import com.lets.security.oauth2.CustomOAuth2UserService;
-import com.lets.security.oauth2.OAuth2AuthenticationSuccessHandler;
-import com.lets.service.user.UserService;
-import com.lets.util.CookieUtil;
-import com.lets.util.RedisUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -19,14 +9,22 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lets.security.JwtAuthenticationFilter;
+import com.lets.security.JwtTokenProvider;
+import com.lets.security.RestAuthenticationEntryPoint;
+import com.lets.service.user.UserService;
+import com.lets.util.CookieUtil;
+import com.lets.util.RedisUtil;
+
+import lombok.RequiredArgsConstructor;
+
 //@EnableWebMvc
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final ObjectMapper objectMapper;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -71,13 +69,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.GET, "/api/auth/exists/**")
                         .permitAll()
                     .anyRequest()
-                        .authenticated()
-                        .and()
-                .oauth2Login()
-                    .userInfoEndpoint()
-                        .userService(customOAuth2UserService)
-                        .and()
-                    .successHandler(oAuth2AuthenticationSuccessHandler);
+                        .authenticated();
+
 
         // Add our custom Token based authentication filter
         http.addFilterBefore(new JwtAuthenticationFilter(objectMapper, userService, jwtTokenProvider, cookieUtil, redisUtil), UsernamePasswordAuthenticationFilter.class);

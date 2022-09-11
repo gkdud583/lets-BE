@@ -37,7 +37,7 @@ public class PostController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public PostResponseDto savePost(@AuthenticationPrincipal UserPrincipal principal, @RequestBody PostSaveRequestDto postSaveRequestDto){
-        User findUser = userService.findOneById(principal.getId());
+        User findUser = userService.findById(principal.getId());
         return postService.savePost(findUser, postSaveRequestDto);
     }
 
@@ -45,7 +45,7 @@ public class PostController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public PostResponseDto updatePost(@AuthenticationPrincipal UserPrincipal principal, @PathVariable("postId") Long postId, @RequestBody PostUpdateRequestDto postUpdateRequestDto){
         Long userId = principal.getId();
-        User user = userService.findOneById(userId);
+        User user = userService.findById(userId);
         return postService.updatePost(user, postId, postUpdateRequestDto);
     }
 
@@ -53,7 +53,7 @@ public class PostController {
     public PostCommentResponseDto findPost(@AuthenticationPrincipal UserPrincipal principal, @PathVariable("postId") Long postId){
         User findUser = null;
         if(principal != null)
-            findUser = userService.findOneById(principal.getId());
+            findUser = userService.findById(principal.getId());
 
         return postService.findPost(findUser, postId);
     }

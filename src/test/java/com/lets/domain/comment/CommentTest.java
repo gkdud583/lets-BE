@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 
 import com.lets.domain.post.Post;
 import com.lets.domain.user.User;
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
 
 public class CommentTest {
 

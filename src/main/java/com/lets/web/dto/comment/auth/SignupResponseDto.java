@@ -1,6 +1,7 @@
-package com.lets.web.dto.auth;
+package com.lets.web.dto.comment.auth;
 
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

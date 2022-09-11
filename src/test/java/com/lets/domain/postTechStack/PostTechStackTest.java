@@ -1,12 +1,13 @@
 package com.lets.domain.postTechStack;
 
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
 import com.lets.domain.post.Post;
 import com.lets.domain.tag.Tag;
 import com.lets.domain.user.User;
-import com.lets.security.oauth2.AuthProvider;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.lets.security.AuthProvider;
 
 public class PostTechStackTest {
     @Test

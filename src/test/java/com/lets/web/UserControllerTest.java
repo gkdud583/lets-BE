@@ -43,10 +43,10 @@ import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
 import com.lets.exception.ErrorResponse;
+import com.lets.security.AuthProvider;
 import com.lets.security.JwtAuthentication;
 import com.lets.security.JwtTokenProvider;
 import com.lets.security.UserPrincipal;
-import com.lets.security.oauth2.AuthProvider;
 import com.lets.service.likePost.LikePostService;
 import com.lets.service.post.PostService;
 import com.lets.service.postTechStack.PostTechStackService;
@@ -262,7 +262,7 @@ public class UserControllerTest {
     postRepository.save(post);
 
     Tag tag = Tag.createTag("spring");
-    tagService.save(tag);
+    tagRepository.save(tag);
 
     PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
     postTechStackService.save(postTechStack);
@@ -310,7 +310,7 @@ public class UserControllerTest {
     postRepository.save(post);
 
     Tag tag = Tag.createTag("spring");
-    tagService.save(tag);
+    tagRepository.save(tag);
 
     PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
     postTechStackService.save(postTechStack);
@@ -415,8 +415,8 @@ public class UserControllerTest {
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findOneById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findOneById(user.getId()).getPublicId()).isEqualTo("default");
+    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
+    assertThat(userService.findById(user.getId()).getPublicId()).isEqualTo("default");
 
   }
 
@@ -439,8 +439,8 @@ public class UserControllerTest {
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findOneById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findOneById(user.getId()).getPublicId()).isEqualTo("default");
+    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
+    assertThat(userService.findById(user.getId()).getPublicId()).isEqualTo("default");
 
   }
 
@@ -474,8 +474,8 @@ public class UserControllerTest {
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findOneById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findOneById(user.getId()).getPublicId()).isNotEqualTo("default");
+    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
+    assertThat(userService.findById(user.getId()).getPublicId()).isNotEqualTo("default");
 
   }
 }

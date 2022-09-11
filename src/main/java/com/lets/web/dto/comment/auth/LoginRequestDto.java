@@ -1,13 +1,13 @@
-package com.lets.web.dto.auth;
-
-
-import com.lets.security.oauth2.AuthProvider;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+package com.lets.web.dto.comment.auth;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import com.lets.security.AuthProvider;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor

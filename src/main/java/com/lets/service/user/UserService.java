@@ -23,9 +23,9 @@ import com.lets.domain.userTechStack.UserTechStack;
 import com.lets.domain.userTechStack.UserTechStackRepository;
 import com.lets.exception.CustomException;
 import com.lets.exception.ErrorCode;
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
 import com.lets.util.CloudinaryUtil;
-import com.lets.web.dto.auth.SignupRequestDto;
+import com.lets.web.dto.comment.auth.SignupRequestDto;
 import com.lets.web.dto.user.SettingRequestDto;
 
 import lombok.RequiredArgsConstructor;
@@ -105,7 +105,7 @@ public class UserService {
     }
 
 
-    public User findOneById(Long id){
+    public User findById(Long id){
         return userRepository.findById(id)
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 

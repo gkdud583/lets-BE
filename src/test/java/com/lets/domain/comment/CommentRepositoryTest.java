@@ -16,7 +16,7 @@ import com.lets.domain.post.Post;
 import com.lets.domain.post.PostRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
 import com.lets.web.dto.comment.CommentSearchRequestDto;
 
 @DataJpaTest

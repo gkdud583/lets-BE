@@ -33,11 +33,11 @@ import com.lets.util.CookieUtil;
 import com.lets.util.FileUtil;
 import com.lets.util.RedisUtil;
 import com.lets.web.dto.ApiResponseDto;
-import com.lets.web.dto.auth.AuthResponseDto;
-import com.lets.web.dto.auth.LoginRequestDto;
-import com.lets.web.dto.auth.SigninResponseDto;
-import com.lets.web.dto.auth.SignupRequestDto;
-import com.lets.web.dto.auth.SignupResponseDto;
+import com.lets.web.dto.comment.auth.AuthResponseDto;
+import com.lets.web.dto.comment.auth.LoginRequestDto;
+import com.lets.web.dto.comment.auth.SigninResponseDto;
+import com.lets.web.dto.comment.auth.SignupRequestDto;
+import com.lets.web.dto.comment.auth.SignupResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -89,7 +89,7 @@ public class AuthController {
 
     //유저 정보 조회
     Long userId = jwtTokenProvider.getUserIdFromJWT(refreshToken);
-    User user = userService.findOneById(userId);
+    User user = userService.findById(userId);
 
     //access token 발행
     Authentication authentication = jwtTokenProvider.getAuthenticationFromJWT(refreshToken);
@@ -213,7 +213,7 @@ public class AuthController {
     userService.existsById(principal.getId());
 
     //유저 삭제
-    User user = userService.findOneById(principal.getId());
+    User user = userService.findById(principal.getId());
     userService.signout(user);
 
     //refresh token 삭제

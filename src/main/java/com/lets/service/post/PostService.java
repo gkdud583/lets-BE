@@ -50,6 +50,10 @@ public class PostService {
     private final CloudinaryUtil cloudinaryUtil;
     private final CommentRepository commentRepository;
 
+    public Post findById(long id) {
+        return postRepository.findById(id)
+                             .orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
+    }
     public List<PostResponseDto> searchPosts(PostSearchRequestDto search, Pageable pageable){
 
         //postTechStack 한번에 구해와서 애플리케이션에서 각 post 의 태그 정보 조립

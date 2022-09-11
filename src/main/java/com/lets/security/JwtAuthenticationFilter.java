@@ -7,7 +7,7 @@ import com.lets.exception.ErrorCode;
 import com.lets.service.user.UserService;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
-import com.lets.web.dto.auth.AuthResponseDto;
+import com.lets.web.dto.comment.auth.AuthResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -79,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             String newAccessToken = jwtTokenProvider.generateAccessToken(jwtAuthentication);
 
                             //유저 정보 조회
-                            User user = userService.findOneById(jwtTokenProvider.getUserIdFromJWT(refreshToken));
+                            User user = userService.findById(jwtTokenProvider.getUserIdFromJWT(refreshToken));
 
                             //요청 처리하지 않고 바로 응답 보내도록 해야함
                             String res = objectMapper.writeValueAsString(new AuthResponseDto(user.getNickname(), newAccessToken, "ACCESS_TOKEN이 재발행되었습니다. 다시 요청해 주세요."));

@@ -1,17 +1,16 @@
-package com.lets.web.dto.auth;
+package com.lets.web.dto.comment.auth;
 
-
-import com.lets.security.oauth2.AuthProvider;
-import lombok.AllArgsConstructor;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.lets.security.AuthProvider;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor

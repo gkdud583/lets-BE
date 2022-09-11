@@ -1,20 +1,10 @@
 package com.lets.domain.postTechStack;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-import com.lets.config.QueryDslConfig;
-import com.lets.domain.post.Post;
-import com.lets.domain.post.PostRepository;
-import com.lets.domain.post.PostStatus;
-import com.lets.domain.tag.Tag;
-import com.lets.domain.tag.TagRepository;
-import com.lets.domain.user.User;
-import com.lets.domain.user.UserRepository;
-import com.lets.security.oauth2.AuthProvider;
-import com.lets.web.dto.post.PostRecommendRequestDto;
-import com.lets.web.dto.post.PostSearchRequestDto;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +14,18 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import com.lets.config.QueryDslConfig;
+import com.lets.domain.post.Post;
+import com.lets.domain.post.PostRepository;
+import com.lets.domain.post.PostStatus;
+import com.lets.domain.tag.Tag;
+import com.lets.domain.tag.TagRepository;
+import com.lets.domain.user.User;
+import com.lets.domain.user.UserRepository;
+import com.lets.security.AuthProvider;
+import com.lets.web.dto.post.PostRecommendRequestDto;
+import com.lets.web.dto.post.PostSearchRequestDto;
 
 @DataJpaTest
 @Import(QueryDslConfig.class)

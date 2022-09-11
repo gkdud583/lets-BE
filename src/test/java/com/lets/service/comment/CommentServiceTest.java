@@ -19,7 +19,7 @@ import com.lets.domain.post.Post;
 import com.lets.domain.user.User;
 import com.lets.exception.CustomException;
 import com.lets.exception.ErrorCode;
-import com.lets.security.oauth2.AuthProvider;
+import com.lets.security.AuthProvider;
 import com.lets.service.post.PostService;
 import com.lets.service.user.UserService;
 import com.lets.web.dto.comment.CommentSaveRequestDto;

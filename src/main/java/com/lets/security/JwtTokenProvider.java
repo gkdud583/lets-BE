@@ -1,27 +1,31 @@
 package com.lets.security;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
-
-import com.lets.domain.user.UserRepository;
-import com.lets.security.oauth2.CustomOAuth2UserService;
-import io.jsonwebtoken.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import com.lets.domain.user.UserRepository;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final UserRepository userRepository;
 
     @Value("${app.jwtSecret}")
@@ -99,4 +103,3 @@ public class JwtTokenProvider {
         return false;
     }
 }
-

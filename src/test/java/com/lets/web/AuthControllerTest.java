@@ -1,5 +1,30 @@
 package com.lets.web;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Arrays;
+
+import javax.servlet.http.Cookie;
+
+import org.apache.commons.codec.binary.Base64;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import com.lets.domain.tag.Tag;
 import com.lets.domain.tag.TagRepository;
@@ -8,37 +33,20 @@ import com.lets.domain.user.UserRepository;
 import com.lets.domain.userTechStack.UserTechStackRepository;
 import com.lets.exception.CustomException;
 import com.lets.exception.ErrorResponse;
+import com.lets.security.AuthProvider;
 import com.lets.security.JwtAuthentication;
 import com.lets.security.JwtTokenProvider;
 import com.lets.security.UserPrincipal;
-import com.lets.security.oauth2.AuthProvider;
 import com.lets.service.tag.TagService;
 import com.lets.service.user.UserService;
 import com.lets.util.CloudinaryUtil;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
-import com.lets.web.dto.*;
-import com.lets.web.dto.auth.AuthResponseDto;
-import com.lets.web.dto.auth.LoginRequestDto;
-import com.lets.web.dto.auth.SignupRequestDto;
-import com.lets.web.dto.auth.SignupResponseDto;
-import org.apache.commons.codec.binary.Base64;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-
-import javax.servlet.http.Cookie;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.lets.web.dto.ApiResponseDto;
+import com.lets.web.dto.comment.auth.AuthResponseDto;
+import com.lets.web.dto.comment.auth.LoginRequestDto;
+import com.lets.web.dto.comment.auth.SignupRequestDto;
+import com.lets.web.dto.comment.auth.SignupResponseDto;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -97,7 +105,7 @@ public class AuthControllerTest {
         refreshTokenCookie = cookieUtil.createCookie("refreshToken", refreshToken);
 
         Tag tag = Tag.createTag("spring");
-        tagService.save(tag);
+        tagRepository.save(tag);
 
 
     }
