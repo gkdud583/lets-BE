@@ -26,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-import com.lets.domain.tag.Tag;
 import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
@@ -104,9 +103,9 @@ public class AuthControllerTest {
         refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
         refreshTokenCookie = cookieUtil.createCookie("refreshToken", refreshToken);
 
-        Tag tag = Tag.createTag("spring");
-        tagRepository.save(tag);
-
+        // Tag tag = Tag.createTag("spring");
+        // tagRepository.save(tag);
+        //
 
     }
 
