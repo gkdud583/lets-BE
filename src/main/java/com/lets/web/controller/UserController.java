@@ -46,13 +46,7 @@ public class UserController {
   @GetMapping("/myPosts")
   @PreAuthorize("hasRole('ROLE_USER')")
   public List<PostResponseDto> findMyPosts(@AuthenticationPrincipal UserPrincipal principal) {
-
-    //유저 조회
-    User findUser = userService.findById(principal.getId());
-
-    //작성 글 조회
-    return postService.findPosts(findUser);
-
+    return postService.findPosts(principal.getId());
   }
 
   /**
@@ -61,13 +55,7 @@ public class UserController {
   @GetMapping("/myLikes")
   @PreAuthorize("hasRole('ROLE_USER')")
   public List<LikePostResponseDto> findMyLikes(@AuthenticationPrincipal UserPrincipal principal) {
-
-    //유저 조회
-    User findUser = userService.findById(principal.getId());
-
-    //관심 글 조회
-    return likePostService.findLikePosts(findUser);
-
+    return likePostService.findLikePosts(principal.getId());
   }
 
   @GetMapping("/setting")
@@ -88,8 +76,10 @@ public class UserController {
 
   @PatchMapping("/setting")
   @PreAuthorize("hasRole('ROLE_USER')")
-  public SettingResponseDto setSetting(@AuthenticationPrincipal UserPrincipal principal,
-                                       @Valid @RequestBody SettingRequestDto settingDto) {
+  public SettingResponseDto setSetting(
+      @AuthenticationPrincipal UserPrincipal principal,
+      @Valid @RequestBody SettingRequestDto settingDto
+  ) {
 
     File file = null;
     String profileStatus = "PRIVATE";

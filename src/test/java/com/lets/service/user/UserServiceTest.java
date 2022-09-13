@@ -15,10 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
-import com.lets.domain.userTechStack.UserTechStackRepository;
 import com.lets.exception.CustomException;
 import com.lets.security.AuthProvider;
 import com.lets.web.dto.comment.auth.SignupRequestDto;
@@ -31,11 +29,6 @@ public class UserServiceTest {
     @Mock
     UserRepository userRepository;
 
-    @Mock
-    TagRepository tagRepository;
-
-    @Mock
-    UserTechStackRepository userTechStackRepository;
 
     private SignupRequestDto signupRequestDto = new SignupRequestDto(null, "user1", "1234", AuthProvider.google, new ArrayList<>());
 
@@ -142,5 +135,6 @@ public class UserServiceTest {
         assertEquals("해당 유저 정보를 찾을 수 없습니다.", exception.getMessage());
 
     }
+
 
 }

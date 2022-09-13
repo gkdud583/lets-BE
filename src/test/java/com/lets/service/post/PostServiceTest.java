@@ -1,35 +1,32 @@
 package com.lets.service.post;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
-
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.lets.domain.comment.CommentRepository;
 import com.lets.domain.likePost.LikePost;
-import com.lets.domain.likePost.LikePostRepository;
 import com.lets.domain.post.Post;
 import com.lets.domain.post.PostRepository;
 import com.lets.domain.postTechStack.PostTechStack;
 import com.lets.domain.postTechStack.PostTechStackRepository;
 import com.lets.domain.tag.Tag;
-import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
-import com.lets.domain.user.UserRepository;
+import com.lets.exception.CustomException;
 import com.lets.security.AuthProvider;
-import com.lets.util.CloudinaryUtil;
+import com.lets.service.user.UserService;
 import com.lets.web.dto.post.PostResponseDto;
-import com.lets.web.dto.post.PostSaveRequestDto;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -37,10 +34,7 @@ public class PostServiceTest {
   PostService postService;
 
   @Mock
-  CloudinaryUtil cloudinaryUtil;
-
-  @Mock
-  TagRepository tagRepository;
+  UserService userService;
 
   @Mock
   PostRepository postRepository;
@@ -49,10 +43,8 @@ public class PostServiceTest {
   PostTechStackRepository postTechStackRepository;
 
   @Mock
-  UserRepository userRepository;
+  CommentRepository commentRepository;
 
-  @Mock
-  LikePostRepository likePostRepository;
 
   User user = User.createUser("user1", "123", AuthProvider.google, "user");
   Post post = Post.createPost(user, "title1", "content1");
@@ -62,44 +54,61 @@ public class PostServiceTest {
   List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
   List<String> tags = Arrays.asList("spring");
   List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
-
+  long commentCount  = 0;
   @Test
-  @Transactional
-  void 단일게시글_조회() {
-    given(postRepository.findOneById(any())).willReturn(Optional.of(post));
+  @DisplayName("findById메서드는 아이디로 글을 조회한다")
+  void findById() {
+    // given
+    long id = 1l;
+    given(postRepository.findById(anyLong()))
+        .willReturn(Optional.of(post));
 
-    assertThat(postRepository
-                   .findOneById(any())
-                   .get()).isEqualTo(post);
+    // when
+    Post foundPost = postService.findById(id);
+
+    // then
+    Assertions.assertThat(foundPost).isEqualTo(post);
   }
 
   @Test
-  void searchPosts() {
-    given(postTechStackRepository.findAllByUser(any())).willReturn(null);
+  @DisplayName("findById메서드는 존재하지 않는 아이디라면 예외를 던진다")
+  void findByIdWithNonexistentId() {
+    // given
+    long id = 1l;
+    given(postRepository.findById(anyLong()))
+        .willReturn(Optional.empty());
 
-    assertThat(postTechStackRepository.findAllByUser(any())).isEqualTo(null);
-
+    // when, then
+    assertThatThrownBy(() -> {
+      postService.findById(id);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("해당 게시글을 찾을 수 없습니다.");
   }
 
   @Test
+  @DisplayName("findPosts메서드는 유저가 작성한 글을 조회한다")
   void findPosts() {
+    //given
+    long userId =  1l;
+    given(userService.findById(anyLong()))
+        .willReturn(user);
+    given(postTechStackRepository.findAllByUser(any(User.class)))
+        .willReturn(postTechStacks);
+    given(commentRepository.countByPost(any(Post.class)))
+        .willReturn(commentCount);
+
     //when
-    given(postService.findPosts(any())).willReturn(null);
+    List<PostResponseDto> result = postService.findPosts(userId);
 
     //then
-    assertThat(postService.findPosts(any())).isEqualTo(null);
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.get(0).getCommentCount()).isEqualTo(commentCount);
+    assertThat(result.get(0).getContent()).isEqualTo(post.getContent());
+    assertThat(result.get(0).getLikeCount()).isEqualTo(post.getLikeCount());
+    assertThat(result.get(0).getStatus()).isEqualTo(post.getStatus());
+    assertThat(result.get(0).getTags().size()).isEqualTo(1);
+    assertThat(result.get(0).getTitle()).isEqualTo(post.getTitle());
+    assertThat(result.get(0).getViewCount()).isEqualTo(post.getViewCount());
   }
-
-  @Test
-  @Transactional
-  void savePost() {
-    PostSaveRequestDto postSaveRequestDto = new PostSaveRequestDto();
-    postSaveRequestDto.setContent("11");
-    postSaveRequestDto.setTitle("11");
-
-    PostResponseDto postResponseDto = postService.savePost(user, postSaveRequestDto);
-
-    assertThat(postResponseDto.getTitle()).isEqualTo("11");
-  }
-
 }
