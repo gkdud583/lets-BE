@@ -16,6 +16,7 @@ import javax.servlet.http.Cookie;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -145,14 +146,16 @@ public class UserControllerTest {
 
   //security test
   @Test
-  public void myPosts_access_token_없음() {
+  @DisplayName("accessToken이 없을 경우 401 을 반환합니다")
+  void myPostsWithNonexistentAccessToken() {
     //given
     HttpHeaders headers = new HttpHeaders();
     String url = "http://localhost:" + port + "/api/users/myPosts";
 
     //when
     ResponseEntity<Object> res = testRestTemplate.exchange(url, HttpMethod.GET,
-                                                           new HttpEntity<>(headers), Object.class);
+                                                           new HttpEntity<>(headers), Object.class
+    );
 
     //then
     //ACCESS_TOKEN_NOT_FOUND(UNAUTHORIZED, "요청 헤더에 ACCESS_TOKEN이 존재하지 않습니다."),
@@ -161,7 +164,8 @@ public class UserControllerTest {
   }
 
   @Test
-  public void myPosts_refresh_token_없음() {
+  @DisplayName("refreshToken이 없을 경우 400 을 반환합니다")
+  void myPostsWithNonexistentRefreshToken() {
     //given
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
@@ -171,7 +175,8 @@ public class UserControllerTest {
 
     //when
     ResponseEntity<Object> res = testRestTemplate.exchange(url, HttpMethod.GET,
-                                                           new HttpEntity<>(headers), Object.class);
+                                                           new HttpEntity<>(headers), Object.class
+    );
 
     //then
     //REFRESH_TOKEN_NOT_FOUND(BAD_REQUEST, "쿠키에 REFRESH_TOKEN이 존재하지 않습니다."),
@@ -180,7 +185,8 @@ public class UserControllerTest {
   }
 
   @Test
-  public void myPosts_유효_하지_않은_refresh_token1() {
+  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환합니다")
+  void myPostsWithInvalidRefreshToken1() {
     //given
     principal = UserPrincipal.create(1L, user);
     authentication = new JwtAuthentication(principal);
@@ -199,7 +205,8 @@ public class UserControllerTest {
 
     //when
     ResponseEntity<Object> res = testRestTemplate.exchange(url, HttpMethod.GET,
-                                                           new HttpEntity<>(headers), Object.class);
+                                                           new HttpEntity<>(headers), Object.class
+    );
 
     //then
     //INVALID_REFRESH_TOKEN(UNAUTHORIZED, "리프레시 REFRESH_TOKEN이 유효하지 않습니다."),
@@ -208,7 +215,8 @@ public class UserControllerTest {
   }
 
   @Test
-  public void myPosts_유효_하지_않은_refresh_token2() {
+  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환합니다")
+  void myPosts_유효_하지_않은_refresh_token2() {
     //given
     principal = UserPrincipal.create(1L, user);
     authentication = new JwtAuthentication(principal);
@@ -227,7 +235,8 @@ public class UserControllerTest {
 
     //when
     ResponseEntity<Object> res = testRestTemplate.exchange(url, HttpMethod.GET,
-                                                           new HttpEntity<>(headers), Object.class);
+                                                           new HttpEntity<>(headers), Object.class
+    );
 
     //then
     //INVALID_REFRESH_TOKEN(UNAUTHORIZED, "REFRESH_TOKEN이 유효하지 않습니다."),
@@ -236,7 +245,8 @@ public class UserControllerTest {
   }
 
   @Test
-  public void myPosts_유저_정보_없음() {
+  @DisplayName("findMyPosts메서드는 유저가 존재하지 않을 경우 404를 반환한다")
+  void myPostsWithNonexistentUser() {
     //given
     userRepository.deleteById(user.getId());
     HttpHeaders headers = new HttpHeaders();
@@ -247,16 +257,20 @@ public class UserControllerTest {
     //when
     ResponseEntity<ErrorResponse> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                   new HttpEntity<>(headers),
-                                                                  ErrorResponse.class);
+                                                                  ErrorResponse.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(res.getBody().getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
+    assertThat(res
+                   .getBody()
+                   .getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
 
   }
 
   @Test
-  public void myPosts_성공() {
+  @DisplayName("findMyPosts메서드는 유저가 작성한 게시글을 반환한다")
+  void myPosts() {
     //given
     Post post = Post.createPost(user, "title1", "content1");
     postRepository.save(post);
@@ -275,16 +289,20 @@ public class UserControllerTest {
     ResponseEntity<List<PostResponseDto>> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                           new HttpEntity<>(headers),
                                                                           new ParameterizedTypeReference<List<PostResponseDto>>() {
-                                                                          });
+                                                                          }
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(res.getBody().size()).isEqualTo(1);
+    assertThat(res
+                   .getBody()
+                   .size()).isEqualTo(1);
 
   }
 
   @Test
-  public void myLikes_유저정보_없음() {
+  @DisplayName("findMyLikes메서드는 유저가 존재하지 않을 경우 404를 반환한다")
+  void myLikesWithNonexistentUser() {
     //given
     userRepository.deleteById(user.getId());
     HttpHeaders headers = new HttpHeaders();
@@ -295,16 +313,20 @@ public class UserControllerTest {
     //when
     ResponseEntity<ErrorResponse> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                   new HttpEntity<>(headers),
-                                                                  ErrorResponse.class);
+                                                                  ErrorResponse.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(res.getBody().getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
+    assertThat(res
+                   .getBody()
+                   .getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
 
   }
 
   @Test
-  public void myLikes_조회_성공() {
+  @DisplayName("findMyLikes메서드는 유저가 조회한 게시글을 반환한다")
+  void myLikes() {
     //given
     Post post = Post.createPost(user, "title1", "content1");
     postRepository.save(post);
@@ -326,16 +348,20 @@ public class UserControllerTest {
     ResponseEntity<List<PostResponseDto>> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                           new HttpEntity<>(headers),
                                                                           new ParameterizedTypeReference<List<PostResponseDto>>() {
-                                                                          });
+                                                                          }
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(res.getBody().size()).isEqualTo(1);
+    assertThat(res
+                   .getBody()
+                   .size()).isEqualTo(1);
 
   }
 
   @Test
-  public void setting_조회_성공() {
+  @DisplayName("getSetting메서드는 유저의 설정 정보를 반환한다")
+  void getSetting() {
     //given
     String url = "http://localhost:" + port + "/api/users/setting";
     HttpHeaders headers = new HttpHeaders();
@@ -344,17 +370,24 @@ public class UserControllerTest {
     //when
     ResponseEntity<SettingResponseDto> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                        new HttpEntity<>(headers),
-                                                                       SettingResponseDto.class);
+                                                                       SettingResponseDto.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(res.getBody().getNickname()).isEqualTo(user.getNickname());
-    assertThat(res.getBody().getProfile().contains("default"));
+    assertThat(res
+                   .getBody()
+                   .getNickname()).isEqualTo(user.getNickname());
+    assertThat(res
+                   .getBody()
+                   .getProfile()
+                   .contains("default"));
 
   }
 
   @Test
-  public void setting_조회_유저_정보_없음() {
+  @DisplayName("getSetting메서드는 존재하지 않는 유저일 경우 404를 반환한다")
+  void getSettingWithNonexistentUser() {
     //given
     userRepository.deleteById(user.getId());
     String url = "http://localhost:" + port + "/api/users/setting";
@@ -364,16 +397,20 @@ public class UserControllerTest {
     //when
     ResponseEntity<ErrorResponse> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                   new HttpEntity<>(headers),
-                                                                  ErrorResponse.class);
+                                                                  ErrorResponse.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(res.getBody().getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
+    assertThat(res
+                   .getBody()
+                   .getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
 
   }
 
   @Test
-  public void setting_저장_유저_정보_없음() {
+  @DisplayName("setSetting메서드는 존재하지 않는 유저일 경우 404를 반환한다")
+  void setSettingWithNonexistentUser() {
     //given
     userRepository.deleteById(user.getId());
 
@@ -382,22 +419,27 @@ public class UserControllerTest {
     headers.add("Authorization", accessToken);
 
     SettingRequestDto settingRequestDto = new SettingRequestDto("default", user.getNickname(),
-                                                                new ArrayList<>());
+                                                                new ArrayList<>()
+    );
 
     //when
     ResponseEntity<ErrorResponse> res = testRestTemplate.exchange(url, HttpMethod.PATCH,
                                                                   new HttpEntity<>(
                                                                       settingRequestDto, headers),
-                                                                  ErrorResponse.class);
+                                                                  ErrorResponse.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    assertThat(res.getBody().getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
+    assertThat(res
+                   .getBody()
+                   .getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
 
   }
 
   @Test
-  public void setting_저장_성공_프로필_유지() {
+  @DisplayName("setSetting메서드는 유저의 설정 정보를 변경한다")
+  void setSetting1() {
 
     //given
     String url = "http://localhost:" + port + "/api/users/setting";
@@ -409,19 +451,27 @@ public class UserControllerTest {
                                                                        new HttpEntity<>(
                                                                            new SettingRequestDto(
                                                                                "KEEP", "user2",
-                                                                               Arrays.asList()),
-                                                                           headers),
-                                                                       SettingResponseDto.class);
+                                                                               Arrays.asList()
+                                                                           ),
+                                                                           headers
+                                                                       ),
+                                                                       SettingResponseDto.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findById(user.getId()).getPublicId()).isEqualTo("default");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getNickname()).isEqualTo("user2");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getPublicId()).isEqualTo("default");
 
   }
 
   @Test
-  public void setting_저장_성공_기본_이미지로_변경() {
+  @DisplayName("setSetting메서드는 유저의 설정 정보를 변경한다")
+  void setSetting2() {
 
     //given
     String url = "http://localhost:" + port + "/api/users/setting";
@@ -433,19 +483,27 @@ public class UserControllerTest {
                                                                        new HttpEntity<>(
                                                                            new SettingRequestDto(
                                                                                "PUBLIC", "user2",
-                                                                               Arrays.asList()),
-                                                                           headers),
-                                                                       SettingResponseDto.class);
+                                                                               Arrays.asList()
+                                                                           ),
+                                                                           headers
+                                                                       ),
+                                                                       SettingResponseDto.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findById(user.getId()).getPublicId()).isEqualTo("default");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getNickname()).isEqualTo("user2");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getPublicId()).isEqualTo("default");
 
   }
 
   @Test
-  public void setting_저장_성공_새로운_이미지로_변경() {
+  @DisplayName("setSetting메서드는 유저의 설정 정보를 변경한다")
+  void setSetting3() {
 
     //given
     File file = new File("src/test/java/com/lets/tea.jpg");
@@ -468,14 +526,21 @@ public class UserControllerTest {
                                                                            new SettingRequestDto(
                                                                                encodedImage,
                                                                                "user2",
-                                                                               Arrays.asList()),
-                                                                           headers),
-                                                                       SettingResponseDto.class);
+                                                                               Arrays.asList()
+                                                                           ),
+                                                                           headers
+                                                                       ),
+                                                                       SettingResponseDto.class
+    );
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService.findById(user.getId()).getNickname()).isEqualTo("user2");
-    assertThat(userService.findById(user.getId()).getPublicId()).isNotEqualTo("default");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getNickname()).isEqualTo("user2");
+    assertThat(userService
+                   .findById(user.getId())
+                   .getPublicId()).isNotEqualTo("default");
 
   }
 }
