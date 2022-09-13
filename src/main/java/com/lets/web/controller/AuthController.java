@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lets.domain.user.User;
-import com.lets.domain.user.UserRepository;
 import com.lets.exception.CustomException;
 import com.lets.security.JwtAuthentication;
 import com.lets.security.JwtTokenProvider;
@@ -51,7 +51,6 @@ public class AuthController {
   private final FileUtil fileUtil;
   private final CloudinaryUtil cloudinaryUtil;
   private final UserService userService;
-  private final UserRepository userRepository;
 
   /**
    *  access token 재발급
@@ -95,9 +94,10 @@ public class AuthController {
     String accessToken = jwtTokenProvider.generateAccessToken(authentication);
 
     //응답
-    return new ResponseEntity(new AuthResponseDto(user.getNickname(), accessToken, "OK"),
-        HttpStatus.OK);
-
+    return new ResponseEntity(
+        new AuthResponseDto(user.getNickname(), accessToken, "OK"),
+        HttpStatus.OK
+    );
   }
 
   /**
@@ -117,7 +117,9 @@ public class AuthController {
   public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestDto signupRequest) {
 
     File file = null;
-    if (!signupRequest.getProfile().equals("PUBLIC")) {
+    if (!signupRequest
+        .getProfile()
+        .equals("PUBLIC")) {
       //file변환
       file = fileUtil.decodeFile(signupRequest.getProfile());
     }
@@ -129,18 +131,23 @@ public class AuthController {
 
     return ResponseEntity.ok(
         new SignupResponseDto(saveUser.getId(), profile, saveUser.getNickname(),
-            saveUser.getSocialLoginId(), saveUser.getAuthProvider()));
+                              saveUser.getSocialLoginId(), saveUser.getAuthProvider()
+        ));
   }
 
   /**
    * 로그인
    */
   @PostMapping("/signin")
-  public ResponseEntity<?> signin(@Valid @RequestBody LoginRequestDto loginRequest,
-      HttpServletResponse response) {
+  public ResponseEntity<?> signin(
+      @Valid @RequestBody LoginRequestDto loginRequest,
+      HttpServletResponse response
+  ) {
 
-    User findUser = userService.findBySocialLoginIdAndAuthProvider(loginRequest.getSocialLoginId(),
-        loginRequest.getAuthProvider());
+    User findUser = userService.findBySocialLoginIdAndAuthProvider(
+        loginRequest.getSocialLoginId(),
+        loginRequest.getAuthProvider()
+    );
 
     //access token, refresh token 생성
     UserPrincipal principal = UserPrincipal.create(findUser);
@@ -154,9 +161,11 @@ public class AuthController {
     //refresh token 쿠키 생성 후 응답에 추가
     Cookie refreshTokenCookie = cookieUtill.createCookie("refreshToken", refreshToken);
     // response.addCookie(refreshTokenCookie);
-    response.setHeader("Set-Cookie",
+    response.setHeader(
+        "Set-Cookie",
         "refreshToken=" + refreshToken + "; Secure; SameSite=none; HttpOnly=true; Path=/; Expires="
-            + refreshTokenCookie.getMaxAge() + ";");
+            + refreshTokenCookie.getMaxAge() + ";"
+    );
 
     //프로필 URI
     String profile = cloudinaryUtil.findFileURL(findUser.getPublicId());
@@ -182,8 +191,9 @@ public class AuthController {
     Cookie refreshTokenCookie = cookieUtill.getCookie(request);
 
     //쿠키에 refresh token 이 없다면 예외 던짐
-    if (refreshTokenCookie == null)
+    if (refreshTokenCookie == null) {
       throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
+    }
 
     //refresh token 값을 얻어 레디스에서 지운다.
     String refreshToken = refreshTokenCookie.getValue();
@@ -203,27 +213,29 @@ public class AuthController {
     3. 서버는 레디스에 존재하는 refresh token 을 지워서 access token 재발급을 막는다.
     4. 클라이언트는 서버에서 정상 응답이 오면 access token 을 지운다.
      */
-  // @PostMapping("/signout")
-  // @PreAuthorize("hasRole('ROLE_USER')")
-  // public ApiResponseDto signout(@AuthenticationPrincipal UserPrincipal principal,
-  //     HttpServletRequest request) {
-  //
-  //   //유저 존재하는지 확인
-  //   userService.existsById(principal.getId());
-  //
-  //   //유저 삭제
-  //   User user = userService.findById(principal.getId());
-  //   userService.signout(user);
-  //
-  //   //refresh token 삭제
-  //   Cookie refreshTokenCookie = cookieUtill.getCookie(request);
-  //   if (refreshTokenCookie == null)
-  //     throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
-  //   String refreshToken = refreshTokenCookie.getValue();
-  //
-  //   redisUtil.deleteData(refreshToken);
-  //
-  //   return new ApiResponseDto(true, "탈퇴 되었습니다.");
-  //
-  // }
+  @PostMapping("/signout")
+  @PreAuthorize("hasRole('ROLE_USER')")
+  public ApiResponseDto signout(
+      @AuthenticationPrincipal UserPrincipal principal,
+      HttpServletRequest request
+  ) {
+
+    //유저 존재하는지 확인
+    userService.existsById(principal.getId());
+
+    //유저 삭제
+    User user = userService.findById(principal.getId());
+    userService.signout(user);
+
+    //refresh token 삭제
+    Cookie refreshTokenCookie = cookieUtill.getCookie(request);
+    if (refreshTokenCookie == null) {
+      throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
+    }
+    String refreshToken = refreshTokenCookie.getValue();
+
+    redisUtil.deleteData(refreshToken);
+
+    return new ApiResponseDto(true, "탈퇴 되었습니다.");
+  }
 }

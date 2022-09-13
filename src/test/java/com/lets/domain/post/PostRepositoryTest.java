@@ -21,57 +21,62 @@ import com.lets.security.AuthProvider;
 @DataJpaTest
 @Import(QueryDslConfig.class)
 public class PostRepositoryTest {
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private PostRepository postRepository;
+  @Autowired
+  private PostRepository postRepository;
 
-    private User user;
-    private Post post;
+  private User user;
+  private Post post;
 
-    @BeforeEach
-    void setup(){
-        user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @BeforeEach
+  void setup() {
+    user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        post = Post.createPost(user, "title1", "content1");
-        postRepository.save(post);
-    }
+    post = Post.createPost(user, "title1", "content1");
+    postRepository.save(post);
+  }
 
-    @DisplayName("id로 모든 글을 삭제합니다.")
-    @Test
-    public void deleteAllById() {
-        //given
+  @DisplayName("deleteAllById메서드는 id로 모든 글을 삭제한다")
+  @Test
+  public void deleteAllById() {
+    //given
 
-        //when
-        postRepository.deleteAllById(Arrays.asList(post.getId()));
+    //when
+    postRepository.deleteAllById(Arrays.asList(post.getId()));
 
-        //then
-        assertThat(postRepository.count()).isEqualTo(0);
-    }
-    @DisplayName("유저가 작성한 모든 글을 조회합니다.")
-    @Test
-    public void findAllByUser() {
-        //given
+    //then
+    assertThat(postRepository.count()).isEqualTo(0);
+  }
 
-        //when
-        List<Post> result = postRepository.findAllByUser(user);
+  @DisplayName("findAllByUser메서드는 유저가 작성한 모든 글을 조회한다")
+  @Test
+  public void findAllByUser() {
+    //given
 
-        //then
-        assertThat(result.size()).isEqualTo(1);
-        assertThat(result.get(0).getTitle()).isEqualTo(post.getTitle());
-    }
+    //when
+    List<Post> result = postRepository.findAllByUser(user);
 
-    @DisplayName("id로 글 단건을 조회합니다.")
-    @Test
-    public void findOneById() {
-        //given
+    //then
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result
+                   .get(0)
+                   .getTitle()).isEqualTo(post.getTitle());
+  }
 
-        //when
-        Optional<Post> result = postRepository.findOneById(post.getId());
+  @DisplayName("findOneById메서드는 id로 글 단건을 조회한다")
+  @Test
+  public void findOneById() {
+    //given
 
-        //then
-        assertThat(result.get().getTitle()).isEqualTo(post.getTitle());
-    }
+    //when
+    Optional<Post> result = postRepository.findOneById(post.getId());
+
+    //then
+    assertThat(result
+                   .get()
+                   .getTitle()).isEqualTo(post.getTitle());
+  }
 }

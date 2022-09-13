@@ -11,7 +11,10 @@ public class CookieUtil {
   @Value("${app.refreshTokenExpirationInMs}")
   private int refreshTokenExpirationInMs;
 
-  public Cookie createCookie(String cookieName, String value) {
+  public Cookie createCookie(
+      String cookieName,
+      String value
+  ) {
     Cookie token = new Cookie(cookieName, value);
     token.setHttpOnly(true);
     token.setMaxAge(refreshTokenExpirationInMs);
@@ -21,11 +24,15 @@ public class CookieUtil {
 
   public Cookie getCookie(HttpServletRequest req) {
     final Cookie[] cookies = req.getCookies();
-    if (cookies == null)
+    if (cookies == null) {
       return null;
+    }
     for (Cookie cookie : cookies) {
-      if (cookie.getName().equals("refreshToken"))
+      if (cookie
+          .getName()
+          .equals("refreshToken")) {
         return cookie;
+      }
     }
     return null;
 

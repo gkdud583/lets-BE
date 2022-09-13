@@ -71,7 +71,7 @@ public class PostTechStackRepositoryTest {
     userRepository.deleteAll();
   }
 
-  @DisplayName("글의 모든 글 기술 스택을 삭제합니다.")
+  @DisplayName("deleteAllByPost메서드는 글의 모든 글 기술 스택을 삭제한다")
   @Test
   public void deleteAllByPost() {
     //given
@@ -82,7 +82,7 @@ public class PostTechStackRepositoryTest {
     assertThat(postTechStackRepository.count()).isEqualTo(0);
   }
 
-  @DisplayName("글의 모든 글 기술 스택을 조회합니다.")
+  @DisplayName("findAllByPosts메서드는 글의 모든 글 기술 스택을 조회한다")
   @Test
   public void findAllByPosts() {
     //given
@@ -91,11 +91,13 @@ public class PostTechStackRepositoryTest {
 
     //then
     assertThat(result.size()).isEqualTo(1);
-    assertThat(result.get(0).getId()).isEqualTo(postTechStack.getId());
+    assertThat(result
+                   .get(0)
+                   .getId()).isEqualTo(postTechStack.getId());
 
   }
 
-  @DisplayName("유저의 모든 글 기술 스택을 조회합니다.")
+  @DisplayName("findAllByUser메서드는 유저의 모든 글 기술 스택을 조회한다")
   @Test
   public void findAllByUser() {
     //given
@@ -104,38 +106,39 @@ public class PostTechStackRepositoryTest {
 
     //then
     assertThat(result.size()).isEqualTo(1);
-    assertThat(result.get(0).getId()).isEqualTo(postTechStack.getId());
+    assertThat(result
+                   .get(0)
+                   .getId()).isEqualTo(postTechStack.getId());
   }
 
-  @DisplayName("검색 조건으로 포스트를 조회합니다.")
+  @DisplayName("findPostTechStacks메서드는 검색 조건으로 포스트를 조회한다")
   @Test
   public void findPostTechStacks() {
     //given
     setupPost(40);
     PageRequest pageRequest = PageRequest.of(0, 20, Sort.by("createdDate"));
     PostSearchRequestDto postSearchRequestDto = new PostSearchRequestDto(
-      PostStatus.RECRUITING.name(), Arrays.asList(tag.getName()));
+        PostStatus.RECRUITING.name(), Arrays.asList(tag.getName()));
 
     //when
     List<PostTechStack> postTechStacks = postTechStackRepository.findPostTechStacks(
-      postSearchRequestDto, pageRequest);
+        postSearchRequestDto, pageRequest);
 
     //then
     assertThat(postTechStacks.size()).isEqualTo(20);
   }
 
-
-  @DisplayName("추천 포스트를 조회합니다.")
+  @DisplayName("findRecommendedPosts메서드는 추천 포스트를 조회한다")
   @Test
   public void findRecommendedPosts() {
     //given
     setupPost(4);
     PostRecommendRequestDto postRecommendRequestDto = new PostRecommendRequestDto(
-      Arrays.asList(tag.getName()));
+        Arrays.asList(tag.getName()));
 
     //when
     List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendedPosts(
-      postRecommendRequestDto, user.getId(), post.getId());
+        postRecommendRequestDto, user.getId(), post.getId());
 
     //then
     assertThat(recommendedPosts.size()).isEqualTo(4);

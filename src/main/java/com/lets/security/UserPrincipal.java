@@ -14,109 +14,123 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import com.lets.domain.user.User;
 
 public class UserPrincipal implements OAuth2User, UserDetails, Principal {
-    private Long id;
-    private String nickname;
-    private String socialLoginId;
-    private AuthProvider authProvider;
-    private Collection<? extends GrantedAuthority> authorities;
-    private Map<String, Object> attributes;
+  private Long id;
+  private String nickname;
+  private String socialLoginId;
+  private AuthProvider authProvider;
+  private Collection<? extends GrantedAuthority> authorities;
+  private Map<String, Object> attributes;
 
-    public UserPrincipal(Long id, String nickname, String socialLoginId, AuthProvider authProvider, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.nickname = nickname;
-        this.socialLoginId = socialLoginId;
-        this.authProvider = authProvider;
-        this.authorities = authorities;
-    }
-    /*
-    getAuthenticationFromJWT 사용
-     */
-    public static UserPrincipal create(Long id, Collection<? extends GrantedAuthority> authorities){
-        return new UserPrincipal(id, null, null, null, authorities);
-    }
+  public UserPrincipal(
+      Long id,
+      String nickname,
+      String socialLoginId,
+      AuthProvider authProvider,
+      Collection<? extends GrantedAuthority> authorities
+  ) {
+    this.id = id;
+    this.nickname = nickname;
+    this.socialLoginId = socialLoginId;
+    this.authProvider = authProvider;
+    this.authorities = authorities;
+  }
 
-    /*
-    테스트 사용
-     */
-    public static UserPrincipal create(Long id, User user) {
-        List<GrantedAuthority> authorities = Collections.
-                singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+  /*
+  getAuthenticationFromJWT 사용
+   */
+  public static UserPrincipal create(
+      Long id,
+      Collection<? extends GrantedAuthority> authorities
+  ) {
+    return new UserPrincipal(id, null, null, null, authorities);
+  }
 
-        return new UserPrincipal(
-                id,
-                user.getNickname(),
-                user.getSocialLoginId(),
-                user.getAuthProvider(),
-                authorities
-        );
-    }
-    public static UserPrincipal create(User user) {
-        List<GrantedAuthority> authorities = Collections.
-                singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+  /*
+  테스트 사용
+   */
+  public static UserPrincipal create(
+      Long id,
+      User user
+  ) {
+    List<GrantedAuthority> authorities = Collections.
+        singletonList(new SimpleGrantedAuthority("ROLE_USER"));
 
-        return new UserPrincipal(
-                user.getId(),
-                user.getNickname(),
-                user.getSocialLoginId(),
-                user.getAuthProvider(),
-                authorities
-        );
-    }
+    return new UserPrincipal(
+        id,
+        user.getNickname(),
+        user.getSocialLoginId(),
+        user.getAuthProvider(),
+        authorities
+    );
+  }
 
-    public Long getId() {
-        return id;
-    }
+  public static UserPrincipal create(User user) {
+    List<GrantedAuthority> authorities = Collections.
+        singletonList(new SimpleGrantedAuthority("ROLE_USER"));
 
-    public AuthProvider getAuthProvider(){
-        return authProvider;
-    }
+    return new UserPrincipal(
+        user.getId(),
+        user.getNickname(),
+        user.getSocialLoginId(),
+        user.getAuthProvider(),
+        authorities
+    );
+  }
 
-    public String getSocialLoginId() {
-        return socialLoginId;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
+  public AuthProvider getAuthProvider() {
+    return authProvider;
+  }
 
-    @Override
-    public String getUsername() {
-        return nickname;
-    }
+  public String getSocialLoginId() {
+    return socialLoginId;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  @Override
+  public String getPassword() {
+    return null;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+  @Override
+  public String getUsername() {
+    return nickname;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
 
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 
-    @Override
-    public String getName() {
-        return String.valueOf(id);
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return authorities;
+  }
+
+  @Override
+  public Map<String, Object> getAttributes() {
+    return attributes;
+  }
+
+  @Override
+  public String getName() {
+    return String.valueOf(id);
+  }
 }

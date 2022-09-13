@@ -26,67 +26,76 @@ import com.lets.security.AuthProvider;
 @Import(QueryDslConfig.class)
 
 public class LikePostRepositoryTest {
-    @Autowired
-    private LikePostRepository likePostRepository;
+  @Autowired
+  private LikePostRepository likePostRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private PostRepository postRepository;
+  @Autowired
+  private PostRepository postRepository;
 
-    private User user;
-    private Post post;
-    private LikePost likePost;
+  private User user;
+  private Post post;
+  private LikePost likePost;
 
-    @BeforeEach
-    void setup(){
-        user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @BeforeEach
+  void setup() {
+    user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        post = Post.createPost(user, "title1", "content1");
-        postRepository.save(post);
+    post = Post.createPost(user, "title1", "content1");
+    postRepository.save(post);
 
-        likePost = LikePost.createLikePost(user, post);
-        likePostRepository.save(likePost);
+    likePost = LikePost.createLikePost(user, post);
+    likePostRepository.save(likePost);
 
-    }
+  }
 
-    @DisplayName("유저의 모든 관심글을 조회합니다.")
-    @Test
-    public void findAllByUser(){
-        //given
+  @DisplayName("findAllByUser메서드는 유저의 관심글을 조회한다")
+  @Test
+  public void findAllByUser() {
+    //given
 
-        //when
-        List<LikePost> result = likePostRepository.findAllByUser(user);
+    //when
+    List<LikePost> result = likePostRepository.findAllByUser(user);
 
-        //then
-        assertThat(result.size()).isEqualTo(1);
-        assertThat(result.get(0).getId()).isEqualTo(likePost.getId());
+    //then
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result
+                   .get(0)
+                   .getId()).isEqualTo(likePost.getId());
 
-    }
-    @DisplayName("특정 글의 모든 관심글을 삭제합니다.")
-    @Test
-    public void deleteAllByPost(){
-        //given
+  }
 
-        //when
-        likePostRepository.deleteAllByPost(Arrays.asList(post));
+  @DisplayName("deleteAllByPost메서드는 특정 글의 모든 관심글을 삭제한다")
+  @Test
+  public void deleteAllByPost() {
+    //given
 
-        //then
-        long result = likePostRepository.count();
-        assertThat(result).isEqualTo(0);
-    }
-    @DisplayName("특정 유저와 특정 글의 관심글을 조회합니다.")
-    @Test
-    public void findByUserIdAndPostId(){
-        //given
+    //when
+    likePostRepository.deleteAllByPost(Arrays.asList(post));
 
-        //when
-        Optional<LikePost> result = likePostRepository.findByUserIdAndPostId(user.getId(), post.getId());
+    //then
+    long result = likePostRepository.count();
+    assertThat(result).isEqualTo(0);
+  }
 
-        //then
-        assertThat(result.get().getId()).isEqualTo(likePost.getId());
-    }
+  @DisplayName("findByUserIdAndPostId메서드는 특정 유저와 특정 글의 관심글을 조회한다")
+  @Test
+  public void findByUserIdAndPostId() {
+    //given
+
+    //when
+    Optional<LikePost> result = likePostRepository.findByUserIdAndPostId(
+        user.getId(),
+        post.getId()
+    );
+
+    //then
+    assertThat(result
+                   .get()
+                   .getId()).isEqualTo(likePost.getId());
+  }
 
 }

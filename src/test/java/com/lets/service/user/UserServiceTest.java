@@ -65,7 +65,8 @@ public class UserServiceTest {
   UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
 
   @Test
-  void validateName_실패() {
+  @DisplayName("validateName메서드는 이름이 중복이라면 예외를 던진다")
+  void validateNameWithDuplicateName() {
     //given
     given(userRepository.existsByNickname(any()))
         .willReturn(true);
@@ -81,7 +82,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void validateName_성공() {
+  @DisplayName("validateName메서드는 이름이 중복인지 확인한다")
+  void validateName() {
     //given
     given(userRepository.existsByNickname(any()))
         .willReturn(false);
@@ -92,7 +94,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void findBySocialLoginIdAndAuthProvider_성공() {
+  @DisplayName("findBySocialLoginIdAndAuthProvider메서드는 socialLoginId & authProvider로 유저를 조회한다")
+  void findBySocialLoginIdAndAuthProvider() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "123");
     given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
@@ -105,7 +108,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void findBySocialLoginIdAndAuthProvider_실패() {
+  @DisplayName("findBySocialLoginIdAndAuthProvider메서드는 유저가 존재하지 않는다면 예외를 던진다")
+  void findBySocialLoginIdAndAuthProviderWithNonexistentUser() {
     //given
     given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
         .willReturn(Optional.ofNullable(null));
@@ -125,7 +129,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void existsById_성공() {
+  @DisplayName("existsById메서드는 아이디로 유저가 존재하는지 확인한다")
+  void existsById() {
     //given
     given(userRepository.existsById(any()))
         .willReturn(true);
@@ -137,7 +142,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void existsById_실패() {
+  @DisplayName("existsById메서드는 아이디로 유저가 존재하지 않는다면 예외를 던진다")
+  void existsByIdWithNonexistentUser() {
     //given
     given(userRepository.existsById(any()))
         .willReturn(false);
@@ -153,7 +159,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void findOneById_성공() {
+  @DisplayName("findById메서드는 아이디로 유저를 조회한다")
+  void findById() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "123");
     given(userRepository.findById(any()))
@@ -167,7 +174,8 @@ public class UserServiceTest {
   }
 
   @Test
-  void findOneById_실패() {
+  @DisplayName("findById메서드는 유저가 존재하지 않는다면 예외를 던진다")
+  void findByIdWithNonexistentUser() {
     //given
     given(userRepository.findById(any()))
         .willReturn(Optional.ofNullable(null));

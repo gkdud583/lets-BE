@@ -1,14 +1,14 @@
 package com.lets.web.dto.post;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 public class PostRecommendRequestDto {
-    private List<String> tags;
+  private List<String> tags;
 }

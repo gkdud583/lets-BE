@@ -81,9 +81,9 @@ public class PostService {
     //postTechStack 한번에 구해와서 애플리케이션에서 각 post 의 태그 정보 조립
     List<PostTechStack> postTechStacks = postTechStackRepository.findAllByUser(user);
 
-      if (postTechStacks == null) {
-          return null;
-      }
+    if (postTechStacks == null) {
+      return null;
+    }
 
     //각 post 의 태그 정보 조립
     return findPostsTags(postTechStacks);
@@ -147,11 +147,11 @@ public class PostService {
         .findOneById(postId)
         .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-      if (post
-          .getUser()
-          .getId() != user.getId()) {
-          throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-      }
+    if (post
+        .getUser()
+        .getId() != user.getId()) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+    }
 
     post.change(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getContent());
     List<Tag> tags = tagRepository.findAllByNameIn(postUpdateRequestDto.getTags());
@@ -280,18 +280,18 @@ public class PostService {
           .collect(Collectors.toCollection(LinkedHashSet::new));
       for (Post post : collect) {
         posts.add(post);
-          if (posts.size() >= 4) {
-              break;
-          }
+        if (posts.size() >= 4) {
+          break;
+        }
       }
     }
     List<PostRecommendResponseDto> list = new ArrayList<>();
 
     for (Post post : posts) {
       list.add(PostRecommendResponseDto.PostRecommendToDto(post));
-        if (list.size() >= 4) {
-            break;
-        }
+      if (list.size() >= 4) {
+        break;
+      }
     }
 
     return list;

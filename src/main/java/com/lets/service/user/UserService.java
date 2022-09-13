@@ -5,12 +5,14 @@ import static com.lets.exception.ErrorCode.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
 import com.lets.domain.likePost.LikePostRepository;
+import com.lets.domain.post.Post;
 import com.lets.domain.post.PostRepository;
 import com.lets.domain.postTechStack.PostTechStackRepository;
 import com.lets.domain.tag.Tag;
@@ -75,27 +77,31 @@ public class UserService {
     return user;
   }
 
-  // public void signout(User user){
-  //     //프로필 이미지 삭제
-  //     deleteProfile(user);
-  //
-  //     //userTechStack 삭제
-  //     userTechStackRepository.deleteAllByUser(user);
-  //
-  //     //postTechStack 삭제
-  //     List<Post> posts = postRepository.findAllByUser(user);
-  //     postTechStackRepository.deleteAllByPost(posts);
-  //
-  //     //likePost 삭제
-  //     likePostRepository.deleteAllByPost(posts);
-  //
-  //     //post 삭제
-  //     List<Long> postIds = posts.stream().map(Post::getId).collect(Collectors.toList());
-  //     postRepository.deleteAllById(postIds);
-  //
-  //     //user 삭제
-  //     userRepository.deleteById(user.getId());
-  // }
+  public void signout(User user) {
+    //프로필 이미지 삭제
+    deleteProfile(user.getPublicId());
+
+    //userTechStack 삭제
+    userTechStackRepository.deleteAllByUser(user);
+
+    //postTechStack 삭제
+    List<Post> posts = postRepository.findAllByUser(user);
+    postTechStackRepository.deleteAllByPost(posts);
+
+    //likePost 삭제
+    likePostRepository.deleteAllByPost(posts);
+
+    //post 삭제
+    List<Long> postIds = posts
+        .stream()
+        .map(Post::getId)
+        .collect(Collectors.toList());
+    postRepository.deleteAllById(postIds);
+
+    //user 삭제
+    userRepository.deleteById(user.getId());
+  }
+
   public User findBySocialLoginIdAndAuthProvider(
       String socialLoginId,
       AuthProvider authProvider
@@ -107,9 +113,9 @@ public class UserService {
 
   public boolean existsById(Long id) {
     boolean result = userRepository.existsById(id);
-      if (!result) {
-          throw new CustomException(USER_NOT_FOUND);
-      }
+    if (!result) {
+      throw new CustomException(USER_NOT_FOUND);
+    }
     return true;
   }
 
@@ -117,7 +123,6 @@ public class UserService {
     if (userRepository.existsByNickname(name)) {
       throw new CustomException(ErrorCode.DUPLICATE_NAME);
     }
-
   }
 
   public User findById(Long id) {
@@ -211,9 +216,9 @@ public class UserService {
     String publicId = "default";
 
     //새로 설정한 이미지가 기본 이미지가 아님 -> 새로운 이미지 저장
-      if (profile != null) {
-          publicId = cloudinaryUtil.saveFile(profile);
-      }
+    if (profile != null) {
+      publicId = cloudinaryUtil.saveFile(profile);
+    }
 
     return publicId;
   }

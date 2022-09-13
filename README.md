@@ -3,6 +3,7 @@
 [hola](https://holaworld.io/)를 클론 코딩한 스터디, 사이드 프로젝트 팀원을 구하는 웹 페이지
 
 # 기술 스택
+
 <div align=center>
 <img src="https://user-images.githubusercontent.com/60775067/173762962-61cb37e1-68e9-44e1-9bc4-71c8da670ff1.png" width="70" height="70" style="max-width=100%; background=red;"/><img src="https://user-images.githubusercontent.com/60775067/173801025-561086cc-08cb-4e85-8993-818748eedbd5.png" width="70" height="70" style="max-width=100%;"/>
 <img src="https://user-images.githubusercontent.com/60775067/173809091-db86a20e-d856-4ce5-9133-a295a216033d.png" width="70" height="70" style="max-width=100%;"/><img src="https://user-images.githubusercontent.com/60775067/173807098-f4a524a0-993f-4181-b91f-8cd3b6d6e42f.png" width="70" height="70" style="max-width=100%;"/><img src="https://user-images.githubusercontent.com/60775067/173807373-ea209d45-c804-4441-87ed-bfc91e8a2f83.png" width="70" height="70" style="max-width=100%;"/>
@@ -17,8 +18,6 @@
 
 </div>
 
-
 # API 문서
+
 https://documenter.getpostman.com/view/16547663/Uyxeq97D
-
-

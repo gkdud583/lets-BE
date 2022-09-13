@@ -41,7 +41,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("save메서드는 댓글을 저장하고 저장된 댓글을 반환한다")
-  void saveComment() {
+  void save() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long userId = 1l;
@@ -72,7 +72,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("save메서드는 유저가 존재하지 않는다면 예외를 던진다")
-  void saveCommentWithNonexistentUser() {
+  void saveWithNonexistentUser() {
     // given
     long userId = 1l;
     long postId = 1l;
@@ -90,7 +90,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("save메서드는 글이 존재하지 않는다면 예외를 던진다")
-  void saveCommentWithNonexistentPost() {
+  void saveWithNonexistentPost() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long userId = 1l;
@@ -115,7 +115,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("update메서드는 댓글 내용을 수정하고 수정된 댓글을 반환한다")
-  void updateComment() {
+  void update() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long commentId = 1l;
@@ -141,7 +141,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("update메서드는 댓글이 존재하지 않는다면 예외를 던진다")
-  void updateCommentWithNonexistentComment() {
+  void updateWithNonexistentComment() {
     // given
     long commentId = 1l;
 
@@ -160,7 +160,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("delete메서드는 댓글을 삭제한다")
-  void deleteComment() {
+  void delete() {
     // given
     User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long commentId = 1l;
@@ -181,7 +181,7 @@ public class CommentServiceTest {
 
   @Test
   @DisplayName("delete메서드는 댓글이 존재하지 않는다면 예외를 던진다")
-  void deleteCommentWithNonexistentComment() {
+  void deleteWithNonexistentComment() {
     // given
     long commentId = 1l;
     given(commentRepository.findById(anyLong()))

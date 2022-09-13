@@ -36,8 +36,8 @@ insert into tag(tag_id, created_date, modified_date, name)
 values (18, now(), now(), 'flutter');
 
 
-insert into user (created_date, modified_date, auth_provider, nickname, role, social_login_id)
-values (now(), now(), 'google', 'y1', 'USER', '123');
+insert into user (created_date, modified_date, auth_provider, nickname, role, social_login_id, public_id)
+values (now(), now(), 'google', 'y1', 'USER', '123', 'default');
 insert into user_tech_stack (created_date, modified_date, tag_id, user_id)
 values (now(), now(), 2, 1);
 insert into user_tech_stack (created_date, modified_date, tag_id, user_id)

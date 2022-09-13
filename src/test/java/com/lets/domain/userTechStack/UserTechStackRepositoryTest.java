@@ -24,65 +24,64 @@ import com.lets.security.AuthProvider;
 @DataJpaTest
 @Import(QueryDslConfig.class)
 public class UserTechStackRepositoryTest {
-    @Autowired
-    EntityManager em;
+  @Autowired
+  EntityManager em;
 
-    @Autowired
-    TagRepository tagRepository;
+  @Autowired
+  TagRepository tagRepository;
 
+  @Autowired
+  UserRepository userRepository;
 
-    @Autowired
-    UserRepository userRepository;
+  @Autowired
+  UserTechStackRepository userTechStackRepository;
 
-    @Autowired
-    UserTechStackRepository userTechStackRepository;
+  @AfterEach
+  void teardown() {
+    userTechStackRepository.deleteAllInBatch();
+    userRepository.deleteAllInBatch();
+    tagRepository.deleteAllInBatch();
+  }
 
-    @AfterEach
-    void teardown(){
-        userTechStackRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-        tagRepository.deleteAllInBatch();
-    }
-    @DisplayName("유저로 모든 유저 기술 스택을 삭제합니다.")
-    @Test
-    public void deleteAllByUser() {
-        //given
-        Tag tag = Tag.createTag("spring");
-        tagRepository.save(tag);
+  @DisplayName("deleteAllByUser메서드는 유저로 모든 유저 기술 스택을 삭제한다")
+  @Test
+  public void deleteAllByUser() {
+    //given
+    Tag tag = Tag.createTag("spring");
+    tagRepository.save(tag);
 
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
-        userTechStackRepository.save(userTechStack);
+    UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
+    userTechStackRepository.save(userTechStack);
 
-        em.clear();
-        //when
-        userTechStackRepository.deleteAllByUser(user);
+    em.clear();
+    //when
+    userTechStackRepository.deleteAllByUser(user);
 
+    //then
+    Optional<UserTechStack> result = userTechStackRepository.findById(userTechStack.getId());
+    assertThat(result).isEmpty();
+  }
 
-        //then
-        Optional<UserTechStack> result = userTechStackRepository.findById(userTechStack.getId());
-        assertThat(result).isEmpty();
-    }
+  @DisplayName("findAllByUser메서드는 유저로 모든 유저 기술 스택을 조회한다")
+  @Test
+  public void findAllByUser() {
+    //given
+    Tag tag = Tag.createTag("spring");
+    tagRepository.save(tag);
 
-    @DisplayName("유저로 모든 유저 기술 스택을 조회합니다.")
-    @Test
-    public void findAllByUser() {
-        //given
-        Tag tag = Tag.createTag("spring");
-        tagRepository.save(tag);
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+    UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
+    userTechStackRepository.save(userTechStack);
 
-        UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
-        userTechStackRepository.save(userTechStack);
+    //when
+    List<UserTechStack> result = userTechStackRepository.findAllByUser(user);
 
-        //when
-        List<UserTechStack> result = userTechStackRepository.findAllByUser(user);
-
-        //then
-        assertThat(result.size()).isEqualTo(1);
-    }
+    //then
+    assertThat(result.size()).isEqualTo(1);
+  }
 }

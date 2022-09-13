@@ -10,23 +10,26 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserResponseDto {
-    private Long id;
+  private Long id;
 
-    private String profile;
+  private String profile;
 
-    @NotBlank
-    private String nickname;
+  @NotBlank
+  private String nickname;
 
+  @NotBlank
+  private String socialLoginId;
 
-    @NotBlank
-    private String socialLoginId;
+  private AuthProvider authProvider;
 
+  public static UserResponseDto toDto(
+      String profile,
+      Long id,
+      String nickname,
+      String socialLoginId,
+      AuthProvider authProvider
+  ) {
+    return new UserResponseDto(id, profile, nickname, socialLoginId, authProvider);
 
-    private AuthProvider authProvider;
-
-
-    public static UserResponseDto toDto(String profile, Long id, String nickname, String socialLoginId, AuthProvider authProvider){
-        return new UserResponseDto(id, profile, nickname, socialLoginId, authProvider);
-
-    }
+  }
 }

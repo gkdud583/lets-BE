@@ -45,13 +45,15 @@ public class PostCommentResponseDto {
 
   private String nickname;
 
-  public PostCommentResponseDto(Post post,
+  public PostCommentResponseDto(
+      Post post,
       LikePostStatus likePostStatus,
       List<Tag> tags,
       List<Comment> comments,
       String profile,
       CloudinaryUtil cloudinaryUtil,
-      String nickName) {
+      String nickName
+  ) {
     this.profile = profile;
     this.id = post.getId();
     this.title = post.getTitle();
@@ -61,29 +63,41 @@ public class PostCommentResponseDto {
     this.status = post.getStatus();
     this.likePostStatus = likePostStatus;
     this.createdDate = post.getCreatedDate();
-    this.tags = tags.stream().map(tag -> tag.getName()).collect(Collectors.toList());
+    this.tags = tags
+        .stream()
+        .map(tag -> tag.getName())
+        .collect(Collectors.toList());
     this.comments = makeComment(comments, cloudinaryUtil);
     this.nickname = nickName;
   }
 
-  public static PostCommentResponseDto PostToDto(Post post,
+  public static PostCommentResponseDto PostToDto(
+      Post post,
       LikePostStatus likePostStatus,
       List<Tag> tags,
       List<Comment> comments,
       String profile,
       CloudinaryUtil cloudinaryUtil,
-      String nickName) {
+      String nickName
+  ) {
     return new PostCommentResponseDto(post, likePostStatus, tags, comments, profile, cloudinaryUtil,
-        nickName);
+                                      nickName
+    );
   }
 
-  private List<CommentResponseDto> makeComment(List<Comment> comments,
-      CloudinaryUtil cloudinaryUtil) {
+  private List<CommentResponseDto> makeComment(
+      List<Comment> comments,
+      CloudinaryUtil cloudinaryUtil
+  ) {
     List<CommentResponseDto> commentList = new ArrayList<>();
 
     for (Comment comment : comments) {
-      commentList.add(CommentResponseDto.from(comment,
-          cloudinaryUtil.findFileURL(comment.getUser().getPublicId())));
+      commentList.add(CommentResponseDto.from(
+          comment,
+          cloudinaryUtil.findFileURL(comment
+                                         .getUser()
+                                         .getPublicId())
+      ));
     }
 
     return commentList;

@@ -17,20 +17,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SignupRequestDto {
 
-    @NotBlank
-    private String profile;
+  @NotBlank
+  private String profile;
 
-    @NotBlank
-    private String nickname;
+  @NotBlank
+  private String nickname;
 
-    @NotBlank
-    private String socialLoginId;
+  @NotBlank
+  private String socialLoginId;
 
-    @NotNull
-    private AuthProvider authProvider;
-    private List<String> tags = new ArrayList<>();
+  @NotNull
+  private AuthProvider authProvider;
+  private List<String> tags = new ArrayList<>();
 
-    public void setTags(List<String> tags){
-        this.tags = tags;
-    }
+  public void setTags(List<String> tags) {
+    this.tags = tags;
+  }
 }

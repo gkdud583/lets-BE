@@ -45,7 +45,6 @@ public class PostServiceTest {
   @Mock
   CommentRepository commentRepository;
 
-
   User user = User.createUser("user1", "123", AuthProvider.google, "user");
   Post post = Post.createPost(user, "title1", "content1");
   List<Post> posts = Arrays.asList(post);
@@ -54,7 +53,8 @@ public class PostServiceTest {
   List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
   List<String> tags = Arrays.asList("spring");
   List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
-  long commentCount  = 0;
+  long commentCount = 0;
+
   @Test
   @DisplayName("findById메서드는 아이디로 글을 조회한다")
   void findById() {
@@ -67,7 +67,9 @@ public class PostServiceTest {
     Post foundPost = postService.findById(id);
 
     // then
-    Assertions.assertThat(foundPost).isEqualTo(post);
+    Assertions
+        .assertThat(foundPost)
+        .isEqualTo(post);
   }
 
   @Test
@@ -90,7 +92,7 @@ public class PostServiceTest {
   @DisplayName("findPosts메서드는 유저가 작성한 글을 조회한다")
   void findPosts() {
     //given
-    long userId =  1l;
+    long userId = 1l;
     given(userService.findById(anyLong()))
         .willReturn(user);
     given(postTechStackRepository.findAllByUser(any(User.class)))
@@ -103,12 +105,27 @@ public class PostServiceTest {
 
     //then
     assertThat(result.size()).isEqualTo(1);
-    assertThat(result.get(0).getCommentCount()).isEqualTo(commentCount);
-    assertThat(result.get(0).getContent()).isEqualTo(post.getContent());
-    assertThat(result.get(0).getLikeCount()).isEqualTo(post.getLikeCount());
-    assertThat(result.get(0).getStatus()).isEqualTo(post.getStatus());
-    assertThat(result.get(0).getTags().size()).isEqualTo(1);
-    assertThat(result.get(0).getTitle()).isEqualTo(post.getTitle());
-    assertThat(result.get(0).getViewCount()).isEqualTo(post.getViewCount());
+    assertThat(result
+                   .get(0)
+                   .getCommentCount()).isEqualTo(commentCount);
+    assertThat(result
+                   .get(0)
+                   .getContent()).isEqualTo(post.getContent());
+    assertThat(result
+                   .get(0)
+                   .getLikeCount()).isEqualTo(post.getLikeCount());
+    assertThat(result
+                   .get(0)
+                   .getStatus()).isEqualTo(post.getStatus());
+    assertThat(result
+                   .get(0)
+                   .getTags()
+                   .size()).isEqualTo(1);
+    assertThat(result
+                   .get(0)
+                   .getTitle()).isEqualTo(post.getTitle());
+    assertThat(result
+                   .get(0)
+                   .getViewCount()).isEqualTo(post.getViewCount());
   }
 }

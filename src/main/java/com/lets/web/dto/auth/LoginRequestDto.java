@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequestDto {
-    @NotBlank
-    private String socialLoginId;
+  @NotBlank
+  private String socialLoginId;
 
-    @NotNull
-    private AuthProvider authProvider;
+  @NotNull
+  private AuthProvider authProvider;
 }

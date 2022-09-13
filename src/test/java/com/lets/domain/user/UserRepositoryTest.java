@@ -17,63 +17,73 @@ import com.lets.security.AuthProvider;
 @Import(QueryDslConfig.class)
 public class UserRepositoryTest {
 
-    @Autowired
-    UserRepository userRepository;
+  @Autowired
+  UserRepository userRepository;
 
-    @DisplayName("id로 유저 단건 조회합니다.")
-    @Test
-    public void findById() {
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @DisplayName("findById메서드는 id로 유저 단건 조회한다")
+  @Test
+  public void findById() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        //when
-        Optional<User> findUser = userRepository.findById(user.getId());
+    //when
+    Optional<User> findUser = userRepository.findById(user.getId());
 
-        //then
-        assertThat(findUser.get().getNickname()).isEqualTo("user1");
-    }
+    //then
+    assertThat(findUser
+                   .get()
+                   .getNickname()).isEqualTo("user1");
+  }
 
-    @DisplayName("socialLoginId & authProvider로 유저 단건 조회합니다.")
-    @Test
-    public void findBySocialLoginIdAndAuthProvider() {
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @DisplayName("findBySocialLoginIdAndAuthProvider메서드는 socialLoginId & authProvider로 유저 단건 조회한다")
+  @Test
+  public void findBySocialLoginIdAndAuthProvider() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        //when
-        Optional<User> findUser = userRepository.findBySocialLoginIdAndAuthProvider(user.getSocialLoginId(), user.getAuthProvider());
+    //when
+    Optional<User> findUser = userRepository.findBySocialLoginIdAndAuthProvider(
+        user.getSocialLoginId(),
+        user.getAuthProvider()
+    );
 
-        //then
-        assertThat(findUser.get().getNickname()).isEqualTo("user1");
-    }
+    //then
+    assertThat(findUser
+                   .get()
+                   .getNickname()).isEqualTo("user1");
+  }
 
-    @DisplayName("닉네임으로 유저가 존재하는지 확인합니다.")
-    @Test
-    public void existsByNickname() {
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @DisplayName("existsByNickname메서드는 닉네임으로 유저가 존재하는지 확인한다")
+  @Test
+  public void existsByNickname() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        //when
-        Boolean result = userRepository.existsByNickname(user.getNickname());
+    //when
+    Boolean result = userRepository.existsByNickname(user.getNickname());
 
-        //then
-        assertThat(result).isTrue();
-    }
+    //then
+    assertThat(result).isTrue();
+  }
 
-    @DisplayName("socialLoginId & authProvider으로 유저가 존재하는지 확인합니다.")
-    @Test
-    public void existsBySocialLoginIdAndAuthProvider() {
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "default");
-        userRepository.save(user);
+  @DisplayName("existsBySocialLoginIdAndAuthProvider메서드는 socialLoginId & authProvider으로 유저가 존재하는지 확인한다")
+  @Test
+  public void existsBySocialLoginIdAndAuthProvider() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    userRepository.save(user);
 
-        //when
-        Boolean result = userRepository.existsBySocialLoginIdAndAuthProvider(user.getSocialLoginId(), user.getAuthProvider());
+    //when
+    Boolean result = userRepository.existsBySocialLoginIdAndAuthProvider(
+        user.getSocialLoginId(),
+        user.getAuthProvider()
+    );
 
-        //then
-        assertThat(result).isTrue();
-    }
+    //then
+    assertThat(result).isTrue();
+  }
 
 }
