@@ -33,11 +33,11 @@ import com.lets.util.CookieUtil;
 import com.lets.util.FileUtil;
 import com.lets.util.RedisUtil;
 import com.lets.web.dto.ApiResponseDto;
-import com.lets.web.dto.comment.auth.AuthResponseDto;
-import com.lets.web.dto.comment.auth.LoginRequestDto;
-import com.lets.web.dto.comment.auth.SigninResponseDto;
-import com.lets.web.dto.comment.auth.SignupRequestDto;
-import com.lets.web.dto.comment.auth.SignupResponseDto;
+import com.lets.web.dto.auth.AuthResponseDto;
+import com.lets.web.dto.auth.LoginRequestDto;
+import com.lets.web.dto.auth.SigninResponseDto;
+import com.lets.web.dto.auth.SignupRequestDto;
+import com.lets.web.dto.auth.SignupResponseDto;
 
 import lombok.RequiredArgsConstructor;
 

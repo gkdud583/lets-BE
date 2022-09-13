@@ -1,4 +1,4 @@
-package com.lets.web.dto.comment.auth;
+package com.lets.web.dto.auth;
 
 import java.util.ArrayList;
 import java.util.List;

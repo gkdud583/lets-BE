@@ -1,4 +1,4 @@
-package com.lets.web.dto.comment.auth;
+package com.lets.web.dto.auth;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

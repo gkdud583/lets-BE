@@ -23,7 +23,7 @@ import com.lets.domain.tag.Tag;
 import com.lets.domain.tag.TagRepository;
 import com.lets.security.AuthProvider;
 import com.lets.service.tag.TagService;
-import com.lets.web.dto.comment.auth.SignupRequestDto;
+import com.lets.web.dto.auth.SignupRequestDto;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

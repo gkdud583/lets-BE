@@ -7,7 +7,7 @@ import com.lets.exception.ErrorCode;
 import com.lets.service.user.UserService;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
-import com.lets.web.dto.comment.auth.AuthResponseDto;
+import com.lets.web.dto.auth.AuthResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
