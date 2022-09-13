@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -204,27 +203,27 @@ public class AuthController {
     3. 서버는 레디스에 존재하는 refresh token 을 지워서 access token 재발급을 막는다.
     4. 클라이언트는 서버에서 정상 응답이 오면 access token 을 지운다.
      */
-  @PostMapping("/signout")
-  @PreAuthorize("hasRole('ROLE_USER')")
-  public ApiResponseDto signout(@AuthenticationPrincipal UserPrincipal principal,
-      HttpServletRequest request) {
-
-    //유저 존재하는지 확인
-    userService.existsById(principal.getId());
-
-    //유저 삭제
-    User user = userService.findById(principal.getId());
-    userService.signout(user);
-
-    //refresh token 삭제
-    Cookie refreshTokenCookie = cookieUtill.getCookie(request);
-    if (refreshTokenCookie == null)
-      throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
-    String refreshToken = refreshTokenCookie.getValue();
-
-    redisUtil.deleteData(refreshToken);
-
-    return new ApiResponseDto(true, "탈퇴 되었습니다.");
-
-  }
+  // @PostMapping("/signout")
+  // @PreAuthorize("hasRole('ROLE_USER')")
+  // public ApiResponseDto signout(@AuthenticationPrincipal UserPrincipal principal,
+  //     HttpServletRequest request) {
+  //
+  //   //유저 존재하는지 확인
+  //   userService.existsById(principal.getId());
+  //
+  //   //유저 삭제
+  //   User user = userService.findById(principal.getId());
+  //   userService.signout(user);
+  //
+  //   //refresh token 삭제
+  //   Cookie refreshTokenCookie = cookieUtill.getCookie(request);
+  //   if (refreshTokenCookie == null)
+  //     throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
+  //   String refreshToken = refreshTokenCookie.getValue();
+  //
+  //   redisUtil.deleteData(refreshToken);
+  //
+  //   return new ApiResponseDto(true, "탈퇴 되었습니다.");
+  //
+  // }
 }

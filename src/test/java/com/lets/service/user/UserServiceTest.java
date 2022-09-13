@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.lets.domain.tag.Tag;
+import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
 import com.lets.domain.userTechStack.UserTechStack;
@@ -25,150 +26,218 @@ import com.lets.domain.userTechStack.UserTechStackRepository;
 import com.lets.exception.CustomException;
 import com.lets.security.AuthProvider;
 import com.lets.util.CloudinaryUtil;
+import com.lets.util.FileUtil;
 import com.lets.web.dto.auth.SignupRequestDto;
+import com.lets.web.dto.user.SettingRequestDto;
 import com.lets.web.dto.user.SettingResponseDto;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-    @InjectMocks
-    UserService userService;
+  @InjectMocks
+  UserService userService;
 
-    @Mock
-    UserRepository userRepository;
+  @Mock
+  UserRepository userRepository;
 
-    @Mock
-    UserTechStackRepository userTechStackRepository;
+  @Mock
+  UserTechStackRepository userTechStackRepository;
 
-    @Mock
-    CloudinaryUtil cloudinaryUtil;
+  @Mock
+  TagRepository tagRepository;
 
-    SignupRequestDto signupRequestDto = new SignupRequestDto(null, "user1", "1234", AuthProvider.google, new ArrayList<>());
-    User user = User.createUser("nickname", "1234", AuthProvider.google, "PUBLIC");
+  @Mock
+  CloudinaryUtil cloudinaryUtil;
 
-    Tag tag = Tag.createTag("spring");
+  @Mock
+  FileUtil fileUtil;
 
-    UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
+  SignupRequestDto signupRequestDto = new SignupRequestDto(
+      null,
+      "user1",
+      "1234",
+      AuthProvider.google,
+      new ArrayList<>()
+  );
+  User user = User.createUser("nickname", "1234", AuthProvider.google, "PUBLIC");
 
-    @Test
-    void validateName_실패(){
-        //given
-        given(userRepository.existsByNickname(any()))
-                .willReturn(true);
-        //when
-        Exception exception  = Assertions.assertThrows(CustomException.class, () -> userService.validateNickname(any()));
+  Tag tag = Tag.createTag("spring");
 
-        //then
-        assertEquals("중복된 닉네임입니다.", exception.getMessage());
+  UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
 
+  @Test
+  void validateName_실패() {
+    //given
+    given(userRepository.existsByNickname(any()))
+        .willReturn(true);
+    //when
+    Exception exception = Assertions.assertThrows(
+        CustomException.class,
+        () -> userService.validateNickname(any())
+    );
 
-    }
-    @Test
-    void validateName_성공(){
-        //given
-        given(userRepository.existsByNickname(any()))
-                .willReturn(false);
-        //when
-        userService.validateNickname(any());
-        //then
+    //then
+    assertEquals("중복된 닉네임입니다.", exception.getMessage());
 
+  }
 
-    }
+  @Test
+  void validateName_성공() {
+    //given
+    given(userRepository.existsByNickname(any()))
+        .willReturn(false);
+    //when
+    userService.validateNickname(any());
+    //then
 
+  }
 
-    @Test
-    void findBySocialLoginIdAndAuthProvider_성공(){
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "123");
-        given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
-                .willReturn(Optional.of(user));
-        //when
-        User findUser = userService.findBySocialLoginIdAndAuthProvider(any(), any());
+  @Test
+  void findBySocialLoginIdAndAuthProvider_성공() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "123");
+    given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
+        .willReturn(Optional.of(user));
+    //when
+    User findUser = userService.findBySocialLoginIdAndAuthProvider(any(), any());
 
-        //then
-        assertThat(findUser).isNotNull();
-    }
-    @Test
-    void findBySocialLoginIdAndAuthProvider_실패(){
-        //given
-        given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
-                .willReturn(Optional.ofNullable(null));
-        //when
-        Exception exception  = Assertions.assertThrows(CustomException.class, () -> userService.findBySocialLoginIdAndAuthProvider(any(), any()));
+    //then
+    assertThat(findUser).isNotNull();
+  }
 
-        //then
-        assertThat(exception.getMessage()).isEqualTo("로그인 정보[SOCIAL_LOGIN_ID, AUTH_PROVIDER]가 올바르지 않습니다.");
+  @Test
+  void findBySocialLoginIdAndAuthProvider_실패() {
+    //given
+    given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
+        .willReturn(Optional.ofNullable(null));
+    //when
+    Exception exception = Assertions.assertThrows(
+        CustomException.class,
+        () -> userService.findBySocialLoginIdAndAuthProvider(
+            any(),
+            any()
+        )
+    );
 
+    //then
+    assertThat(exception.getMessage()).isEqualTo(
+        "로그인 정보[SOCIAL_LOGIN_ID, AUTH_PROVIDER]가 올바르지 않습니다.");
 
-    }
+  }
 
-    @Test
-    void existsById_성공() {
-        //given
-        given(userRepository.existsById(any()))
-                .willReturn(true);
-        //when
-        boolean result = userService.existsById(any());
+  @Test
+  void existsById_성공() {
+    //given
+    given(userRepository.existsById(any()))
+        .willReturn(true);
+    //when
+    boolean result = userService.existsById(any());
 
-        //then
-        assertThat(result).isTrue();
-    }
-    @Test
-    void existsById_실패() {
-        //given
-        given(userRepository.existsById(any()))
-                .willReturn(false);
-        //when
-        Exception exception  = Assertions.assertThrows(CustomException.class, () -> userService.existsById(any()));
+    //then
+    assertThat(result).isTrue();
+  }
 
-        //then
-        assertThat(exception.getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
+  @Test
+  void existsById_실패() {
+    //given
+    given(userRepository.existsById(any()))
+        .willReturn(false);
+    //when
+    Exception exception = Assertions.assertThrows(
+        CustomException.class,
+        () -> userService.existsById(any())
+    );
 
-    }
-    @Test
-    void findOneById_성공(){
-        //given
-        User user = User.createUser("user1", "123", AuthProvider.google, "123");
-        given(userRepository.findById(any()))
-                .willReturn(Optional.of(user));
-        //when
-        User findUser = userService.findById(user.getId());
+    //then
+    assertThat(exception.getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
 
-        //then
-        assertThat(findUser).isNotNull();
+  }
 
-    }
-    @Test
-    void findOneById_실패(){
-        //given
-        given(userRepository.findById(any()))
-                .willReturn(Optional.ofNullable(null));
-        //when
-        Exception exception  = Assertions.assertThrows(CustomException.class, () -> userService.findById(any()));
+  @Test
+  void findOneById_성공() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "123");
+    given(userRepository.findById(any()))
+        .willReturn(Optional.of(user));
+    //when
+    User findUser = userService.findById(user.getId());
 
-        //then
-        assertEquals("해당 유저 정보를 찾을 수 없습니다.", exception.getMessage());
+    //then
+    assertThat(findUser).isNotNull();
 
-    }
+  }
 
-    @Test
-    @DisplayName("getSetting메서드는 유저 설정 정보를 조회한다")
-    void getSetting() {
-        //given
-        String profile = "profile";
-        long userId = 1l;
-        given(userRepository.findById(anyLong()))
-            .willReturn(Optional.of(user));
-        given(userTechStackRepository.findAllByUser(any(User.class)))
-            .willReturn(List.of(userTechStack));
-        given(cloudinaryUtil.findFileURL(anyString()))
-            .willReturn(profile);
+  @Test
+  void findOneById_실패() {
+    //given
+    given(userRepository.findById(any()))
+        .willReturn(Optional.ofNullable(null));
+    //when
+    Exception exception = Assertions.assertThrows(
+        CustomException.class,
+        () -> userService.findById(any())
+    );
 
-        //when
-        SettingResponseDto result = userService.getSetting(userId);
+    //then
+    assertEquals("해당 유저 정보를 찾을 수 없습니다.", exception.getMessage());
 
-        //then
-        assertThat(result.getNickname()).isEqualTo(user.getNickname());
-        assertThat(result.getProfile()).isEqualTo(profile);
-        assertThat(result.getTags().size()).isEqualTo(1);
-    }
+  }
+
+  @Test
+  @DisplayName("getSetting메서드는 유저 설정 정보를 조회한다")
+  void getSetting() {
+    //given
+    String profile = "profile";
+    long userId = 1l;
+    given(userRepository.findById(anyLong()))
+        .willReturn(Optional.of(user));
+    given(userTechStackRepository.findAllByUser(any(User.class)))
+        .willReturn(List.of(userTechStack));
+    given(cloudinaryUtil.findFileURL(anyString()))
+        .willReturn(profile);
+
+    //when
+    SettingResponseDto result = userService.getSetting(userId);
+
+    //then
+    assertThat(result.getNickname()).isEqualTo(user.getNickname());
+    assertThat(result.getProfile()).isEqualTo(profile);
+    assertThat(result
+                   .getTags()
+                   .size()).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("setSetting메서드는 유저 설정 정보를 변경한다")
+  void setSetting() {
+    //given
+    long userId = 1l;
+    SettingRequestDto settingRequestDto = new SettingRequestDto(
+        "PUBLIC",
+        "newName",
+        List.of(tag.getName())
+    );
+    String publicId = "default";
+    String profile = "profile";
+
+    given(userRepository.findById(anyLong()))
+        .willReturn(Optional.of(user));
+    given(tagRepository.findAllByNameIn(anyList()))
+        .willReturn(List.of(tag));
+    given(userTechStackRepository.saveAll(anyList()))
+        .willReturn(List.of(userTechStack));
+    given(userRepository.existsByNickname(anyString()))
+        .willReturn(false);
+    given(cloudinaryUtil.findFileURL(anyString()))
+        .willReturn(profile);
+
+    //when
+    SettingResponseDto result = userService.setSetting(userId, settingRequestDto);
+
+    //then
+    assertThat(result
+                   .getTags()
+                   .size()).isEqualTo(1);
+    assertThat(result.getNickname()).isEqualTo(user.getNickname());
+    assertThat(result.getProfile()).isEqualTo(profile);
+  }
 }

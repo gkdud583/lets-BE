@@ -21,56 +21,63 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {
-                "nickname"
-        })
+    @UniqueConstraint(columnNames = {
+        "nickname"
+    })
 
 })
 @Entity
 public class User extends BaseTimeEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "user_id")
+  private Long id;
 
-    @NotBlank
-    private String nickname;
+  @NotBlank
+  private String nickname;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
 
-    private String publicId;
+  private String publicId;
 
-    @NotBlank
-    private String socialLoginId;
+  @NotBlank
+  private String socialLoginId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AuthProvider authProvider;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private AuthProvider authProvider;
 
-    private User(String nickname, String socialLoginId, AuthProvider authProvider, String publicId){
-        this.nickname = nickname;
-        this.socialLoginId = socialLoginId;
-        this.authProvider = authProvider;
-        this.publicId = publicId;
-        this.role = Role.USER;
-    }
+  private User(
+      String nickname,
+      String socialLoginId,
+      AuthProvider authProvider,
+      String publicId
+  ) {
+    this.nickname = nickname;
+    this.socialLoginId = socialLoginId;
+    this.authProvider = authProvider;
+    this.publicId = publicId;
+    this.role = Role.USER;
+  }
 
-    //==생성 메서드==//
-    public static User createUser(String nickname, String socialLoginId, AuthProvider authProvider, String publicId){
-        User user = new User(nickname, socialLoginId, authProvider, publicId);
-        return user;
-    }
+  //==생성 메서드==//
+  public static User createUser(
+      String nickname,
+      String socialLoginId,
+      AuthProvider authProvider,
+      String publicId
+  ) {
+    User user = new User(nickname, socialLoginId, authProvider, publicId);
+    return user;
+  }
 
+  public void changePublicId(String publicId) {
+    this.publicId = publicId;
+  }
 
-
-    //==필드값 변경==//
-    public void change(String publicId, String nickname){
-        this.publicId = publicId;
-        this.nickname = nickname;
-    }
-
-
-
-
+  public void changeNickname(String nickname) {
+    this.nickname = nickname;
+  }
 }
