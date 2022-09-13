@@ -25,8 +25,9 @@ import com.lets.exception.CustomException;
 import com.lets.exception.ErrorCode;
 import com.lets.security.AuthProvider;
 import com.lets.util.CloudinaryUtil;
-import com.lets.web.dto.comment.auth.SignupRequestDto;
+import com.lets.web.dto.auth.SignupRequestDto;
 import com.lets.web.dto.user.SettingRequestDto;
+import com.lets.web.dto.user.SettingResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -111,6 +112,13 @@ public class UserService {
 
     }
 
+    public SettingResponseDto getSetting(long userId) {
+        User user = findById(userId);
+        List<UserTechStack> userTechStacks = userTechStackRepository.findAllByUser(user);
+        String profile = cloudinaryUtil.findFileURL(user.getPublicId());
+
+        return SettingResponseDto.from(profile, user.getNickname(), userTechStacks);
+    }
     public void change(User user, String profileStatus, File profile, SettingRequestDto settingRequestDto){
 
         String publicId = user.getPublicId();
