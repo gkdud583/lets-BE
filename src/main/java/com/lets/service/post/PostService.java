@@ -134,8 +134,6 @@ public class PostService {
     String profile = cloudinaryUtil.findFileURL(user.getPublicId());
     postTechStackRepository.saveAll(postTechStackList);
 
-    likePostRepository.save(LikePost.createLikePost(user, post));
-
     return PostResponseDto.PostToDto(post, tags, profile, 0L);
   }
 
