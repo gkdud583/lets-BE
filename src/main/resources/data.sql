@@ -84,6 +84,3 @@ insert into POST_TECH_STACK(created_date, modified_date, tag_id, post_id)
 values (now(), now(), 1, 1);
 insert into POST_TECH_STACK(created_date, modified_date, tag_id, post_id)
 values (now(), now(), 2, 2);
-
-insert into LIKE_POST(created_date, modified_date, post_id, user_id, status)
-values (now(), now(), 1, 1, 'ACTIVE');
