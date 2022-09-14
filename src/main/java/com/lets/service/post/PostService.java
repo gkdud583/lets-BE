@@ -189,6 +189,7 @@ public class PostService {
     postRepository.delete(post);
   }
 
+  @Transactional
   public PostCommentResponseDto findPost(
       User user,
       Long postId
