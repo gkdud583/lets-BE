@@ -3,12 +3,14 @@ package com.lets.web;
 import static org.assertj.core.api.Assertions.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.servlet.http.Cookie;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -196,7 +198,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 단일포스트_검색() throws Exception {
+  @DisplayName("findPost메서드는 아이디로 포스트를 조회한다")
+  void findPost() {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -223,7 +226,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 단일포스트_검색_로그인없이() {
+  @DisplayName("findPost메서드는 아이디로 포스트를 조회한다")
+  void findPostWithoutLogin() {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -247,7 +251,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_등록() throws Exception {
+  @DisplayName("savePost메서드는 포스트 한건을 저장한다")
+  void savePost() throws Exception {
     String title = "title444";
     String content = "content";
     List<String> tags = List.of("spring", "java");
@@ -279,6 +284,7 @@ public class PostControllerTest {
   }
 
   @Test
+  @DisplayName("savePost메서드는 존재하지 않는 유저라면 401을 반환한다")
   void 포스트_등록_유저정보없음() throws Exception {
     String title = "title444";
     String content = "content";
@@ -303,7 +309,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_수정() throws Exception {
+  @DisplayName("updatePost메서드는 포스트를 수정한다")
+  void updatePost() throws Exception {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -340,7 +347,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_수정_권한없음() throws Exception {
+  @DisplayName("updatePost메서드는 수정권한이 없는 유저라면 401을 반환한다")
+  void updatePostWithUnauthorizedUser() throws Exception {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -368,7 +376,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_삭제() throws Exception {
+  @DisplayName("deletePost메서드는 포스트를 삭제한다")
+  void deletePost() {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -391,7 +400,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_삭제_권한없음() throws Exception {
+  @DisplayName("deletePost메서드는 삭제 권한이 없는 유저라면 401을 반환한다")
+  void deletePostWithUnauthorizedUser() {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -414,7 +424,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 포스트_좋아요() throws Exception {
+  @DisplayName("changeLikeStatus메서드는 좋아요 상태를 변경한다")
+  void changeLikeStatus() throws URISyntaxException {
     Long id = postRepository
         .findAll()
         .get(0)
@@ -456,7 +467,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void searchPosts_성공() {
+  @DisplayName("searchPosts메서드는 조건에 맞는 글을 검색한다")
+  void searchPosts() {
     //given
     String url = "http://localhost:" + port
         + "/api/posts/filter?status=RECRUITING&page=0&sort=createdDate,DESC&tags=spring,java";
@@ -477,7 +489,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 추천포스트_조회() throws Exception {
+  @DisplayName("recommendedPosts메서드는 추천 포스트 목록을 생성한다")
+  void 추천포스트_조회() {
     //given
     String url = "http://localhost:" + port + "/api/posts/2/recommends?tags=java,c,python";
     //LogIn
@@ -507,7 +520,8 @@ public class PostControllerTest {
   }
 
   @Test
-  void 추천포스트_조회_User없이() throws Exception {
+  @DisplayName("recommendedPosts메서드는 추천 포스트 목록을 생성한다")
+  void recommendedPostsWithNonUser() {
     //given
     String url = "http://localhost:" + port + "/api/posts/2/recommends?tags=java,c,python";
 
