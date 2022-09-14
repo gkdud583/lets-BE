@@ -112,6 +112,7 @@ public class PostService {
     return postDtos;
   }
 
+  @Transactional
   public PostResponseDto savePost(
       User user,
       PostSaveRequestDto postSaveRequestDto
@@ -138,6 +139,7 @@ public class PostService {
     return PostResponseDto.PostToDto(post, tags, profile, 0L);
   }
 
+  @Transactional
   public PostResponseDto updatePost(
       User user,
       Long postId,
@@ -169,6 +171,7 @@ public class PostService {
     return PostResponseDto.PostToDto(post, tags, profile, 0L);
   }
 
+  @Transactional
   public void deletePost(
       Long userId,
       Long postId
@@ -237,6 +240,7 @@ public class PostService {
     );
   }
 
+  @Transactional
   public ChangeLikePostStatusResponseDto changeLikeStatus(
       Long userId,
       Long postId
