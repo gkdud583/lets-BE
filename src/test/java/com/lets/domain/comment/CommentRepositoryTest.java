@@ -3,6 +3,7 @@ package com.lets.domain.comment;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +50,7 @@ public class CommentRepositoryTest {
 
   @DisplayName("countByPost메서드는 글의 댓글 수를 반환한다")
   @Test
-  public void countByPost() {
+  void countByPost() {
     //given
 
     //when
@@ -61,7 +62,7 @@ public class CommentRepositoryTest {
 
   @DisplayName("deleteAllByPost메서드는 특정 글의 모든 댓글을 삭제한다")
   @Test
-  public void deleteAllByPost() {
+  void deleteAllByPost() {
     //given
 
     //when
@@ -74,7 +75,7 @@ public class CommentRepositoryTest {
 
   @DisplayName("findComments메서드는 모든 댓글을 조회한다")
   @Test
-  public void findComments() {
+  void findComments() {
     //given
     Comment comment2 = Comment.createComment(user, post, "comment2");
     commentRepository.save(comment2);
@@ -86,4 +87,14 @@ public class CommentRepositoryTest {
     assertThat(comments.size()).isEqualTo(2);
   }
 
+  @DisplayName("findByIdWithUser메서드는 아이디로 유저를 페치 조인하여 댓글을 조회한다")
+  @Test
+  void findByIdWithUser() {
+    //given
+    //when
+    Optional<Comment> comment = commentRepository.findByIdWithUser(this.comment.getId());
+
+    //then
+    assertThat(comment.get()).isEqualTo(this.comment);
+  }
 }

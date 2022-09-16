@@ -12,6 +12,7 @@ import com.lets.exception.CustomException;
 import com.lets.exception.ErrorCode;
 import com.lets.service.post.PostService;
 import com.lets.service.user.UserService;
+import com.lets.web.dto.comment.CommentResponseDto;
 import com.lets.web.dto.comment.CommentSaveRequestDto;
 import com.lets.web.dto.comment.CommentUpdateRequestDto;
 
@@ -26,7 +27,7 @@ public class CommentService {
 
   //댓글 저장
   @Transactional
-  public Comment save(
+  public CommentResponseDto save(
       long userId,
       long postId,
       CommentSaveRequestDto commentSaveRequestDto
@@ -35,18 +36,28 @@ public class CommentService {
     Post post = postService.findById(postId);
     Comment comment = Comment.createComment(user, post, commentSaveRequestDto.getContent());
     Comment savedComment = commentRepository.save(comment);
-    return savedComment;
+
+    return CommentResponseDto.from(null, savedComment.getId(), user.getNickname(),
+                                   savedComment.getContent(), savedComment.getCreatedDate()
+    );
   }
 
   //댓글 수정
   @Transactional
-  public Comment update(
+  public CommentResponseDto update(
       long commentId,
       CommentUpdateRequestDto commentUpdateRequestDto
   ) {
     Comment comment = findById(commentId);
     comment.change(commentUpdateRequestDto.getContent());
-    return comment;
+    return CommentResponseDto.from(null,
+                                   comment.getId(),
+                                   comment
+                                       .getUser()
+                                       .getNickname(),
+                                   comment.getContent(),
+                                   comment.getCreatedDate()
+    );
   }
 
   //댓글 지우기
@@ -58,7 +69,7 @@ public class CommentService {
 
   public Comment findById(long id) {
     return commentRepository
-        .findById(id)
+        .findByIdWithUser(id)
         .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
   }
 }

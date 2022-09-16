@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.lets.domain.comment.Comment;
 import com.lets.domain.comment.CommentRepository;
@@ -22,6 +23,7 @@ import com.lets.exception.ErrorCode;
 import com.lets.security.AuthProvider;
 import com.lets.service.post.PostService;
 import com.lets.service.user.UserService;
+import com.lets.web.dto.comment.CommentResponseDto;
 import com.lets.web.dto.comment.CommentSaveRequestDto;
 import com.lets.web.dto.comment.CommentUpdateRequestDto;
 
@@ -39,17 +41,23 @@ public class CommentServiceTest {
   @InjectMocks
   CommentService commentService;
 
+  static long userId = 1l;
+  static long postId = 1l;
+  static long commentId = 1l;
+  static String profile = null;
+  static String newContent = "content";
+
+  static User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
+  static Post post = Post.createPost(user, "title", "content");
+
   @Test
   @DisplayName("save메서드는 댓글을 저장하고 저장된 댓글을 반환한다")
   void save() {
     // given
-    User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
-    long userId = 1l;
-    long postId = 1l;
-
-    Post post = Post.createPost(user, "title", "content");
-
+    long commentId = 1l;
     Comment comment = Comment.createComment(user, post, "content");
+
+    ReflectionTestUtils.setField(comment, "id", commentId);
 
     given(userService.findById(anyLong()))
         .willReturn(user);
@@ -59,24 +67,24 @@ public class CommentServiceTest {
         .willReturn(comment);
 
     // when
-    Comment savedComment = commentService.save(
+    CommentResponseDto result = commentService.save(
         userId,
         postId,
-        new CommentSaveRequestDto("comment1")
+        new CommentSaveRequestDto(newContent)
     );
 
     // then
     verify(commentRepository).save(any(Comment.class));
-    assertThat(savedComment).isEqualTo(comment);
+    assertThat(result.getId()).isEqualTo(commentId);
+    assertThat(result.getProfile()).isEqualTo(profile);
+    assertThat(result.getNickname()).isEqualTo(user.getNickname());
+    assertThat(result.getContent()).isEqualTo(newContent);
   }
 
   @Test
   @DisplayName("save메서드는 유저가 존재하지 않는다면 예외를 던진다")
   void saveWithNonexistentUser() {
     // given
-    long userId = 1l;
-    long postId = 1l;
-
     given(userService.findById(anyLong()))
         .willThrow(new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -92,14 +100,6 @@ public class CommentServiceTest {
   @DisplayName("save메서드는 글이 존재하지 않는다면 예외를 던진다")
   void saveWithNonexistentPost() {
     // given
-    User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
-    long userId = 1l;
-    long postId = 1l;
-
-    Post post = Post.createPost(user, "title", "content");
-
-    Comment comment = Comment.createComment(user, post, "content");
-
     given(userService.findById(anyLong()))
         .willReturn(user);
     given(postService.findById(anyLong()))
@@ -117,26 +117,23 @@ public class CommentServiceTest {
   @DisplayName("update메서드는 댓글 내용을 수정하고 수정된 댓글을 반환한다")
   void update() {
     // given
-    User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long commentId = 1l;
-
-    Post post = Post.createPost(user, "title", "content");
 
     Comment comment = Comment.createComment(user, post, "content");
 
-    String newContent = "newContent";
+    ReflectionTestUtils.setField(comment, "id", commentId);
 
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.of(comment));
 
     // when
-    Comment updatedComment = commentService.update(
+    CommentResponseDto result = commentService.update(
         commentId,
         new CommentUpdateRequestDto(newContent)
     );
 
     // then
-    assertThat(updatedComment.getContent()).isEqualTo(newContent);
+    assertThat(result.getContent()).isEqualTo(newContent);
   }
 
   @Test
@@ -147,7 +144,7 @@ public class CommentServiceTest {
 
     String newContent = "newContent";
 
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.empty());
 
     // when, then
@@ -162,14 +159,11 @@ public class CommentServiceTest {
   @DisplayName("delete메서드는 댓글을 삭제한다")
   void delete() {
     // given
-    User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long commentId = 1l;
-
-    Post post = Post.createPost(user, "title", "content");
 
     Comment comment = Comment.createComment(user, post, "content");
 
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.of(comment));
 
     // when
@@ -184,7 +178,7 @@ public class CommentServiceTest {
   void deleteWithNonexistentComment() {
     // given
     long commentId = 1l;
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.empty());
 
     // when, then
@@ -199,21 +193,18 @@ public class CommentServiceTest {
   @DisplayName("findById메서드는 아이디로 댓글을 조회한다")
   void findById() {
     // given
-    User user = User.createUser("nickname", "123", AuthProvider.google, "PUBLIC");
     long commentId = 1l;
-
-    Post post = Post.createPost(user, "title", "content");
 
     Comment comment = Comment.createComment(user, post, "content");
 
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.of(comment));
 
     // when
     Comment foundComment = commentService.findById(commentId);
 
     // then
-    verify(commentRepository).findById(anyLong());
+    verify(commentRepository).findByIdWithUser(anyLong());
     assertThat(foundComment).isEqualTo(comment);
   }
 
@@ -222,7 +213,7 @@ public class CommentServiceTest {
   void findByIdNonexistentComment() {
     // given
     long commentId = 1l;
-    given(commentRepository.findById(anyLong()))
+    given(commentRepository.findByIdWithUser(anyLong()))
         .willReturn(Optional.empty());
 
     // when, then
