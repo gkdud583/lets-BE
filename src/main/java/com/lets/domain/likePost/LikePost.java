@@ -45,7 +45,7 @@ public class LikePost extends BaseTimeEntity {
   ) {
     this.user = user;
     this.post = post;
-    status = LikePostStatus.INACTIVE;
+    this.status = LikePostStatus.INACTIVE;
   }
 
   public static LikePost createLikePost(
