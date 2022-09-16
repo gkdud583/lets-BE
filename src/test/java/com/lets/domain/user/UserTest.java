@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.lets.domain.post.Post;
 import com.lets.security.AuthProvider;
 
 public class UserTest {
@@ -46,5 +47,19 @@ public class UserTest {
 
     //then
     assertThat(user.getNickname()).isEqualTo(nickname);
+  }
+
+  @Test
+  @DisplayName("isWriterOf메서드는 사용자가 글의 작성자가 맞는지 확인한다")
+  void isWriterOf() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    Post post = Post.createPost(user, "title", "content");
+
+    //when
+    boolean isWriter = user.isWriterOf(post);
+
+    //then
+    assertThat(isWriter).isEqualTo(true);
   }
 }

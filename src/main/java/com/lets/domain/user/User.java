@@ -1,5 +1,7 @@
 package com.lets.domain.user;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,6 +14,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 
 import com.lets.domain.BaseTimeEntity;
+import com.lets.domain.post.Post;
 import com.lets.security.AuthProvider;
 
 import lombok.AccessLevel;
@@ -79,5 +82,26 @@ public class User extends BaseTimeEntity {
 
   public void changeNickname(String nickname) {
     this.nickname = nickname;
+  }
+
+  public boolean isWriterOf(Post post) {
+    return this.equals(post.getUser());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    User user = (User)o;
+    return Objects.equals(id, user.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id);
   }
 }
