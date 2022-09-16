@@ -5,17 +5,15 @@ import javax.validation.constraints.NotNull;
 
 import com.lets.security.AuthProvider;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LoginRequestDto {
   @NotBlank
-  private String socialLoginId;
+  private final String socialLoginId;
 
   @NotNull
-  private AuthProvider authProvider;
+  private final AuthProvider authProvider;
 }

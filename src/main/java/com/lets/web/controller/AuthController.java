@@ -131,7 +131,7 @@ public class AuthController {
    * 로그인
    */
   @PostMapping("/signin")
-  public SignInResponseDto signIn(
+  public SignInResponseDto signin(
       @Valid @RequestBody LoginRequestDto loginRequest,
       HttpServletResponse response
   ) {
@@ -203,7 +203,7 @@ public class AuthController {
      */
   @PostMapping("/signout")
   @PreAuthorize("hasRole('ROLE_USER')")
-  public void signOut(
+  public void signout(
       @AuthenticationPrincipal UserPrincipal principal,
       HttpServletRequest request
   ) {

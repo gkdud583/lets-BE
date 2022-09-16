@@ -7,10 +7,10 @@ import java.io.FileInputStream;
 import java.util.Arrays;
 
 import javax.servlet.http.Cookie;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,14 +31,11 @@ import com.lets.domain.tag.TagRepository;
 import com.lets.domain.user.User;
 import com.lets.domain.user.UserRepository;
 import com.lets.domain.userTechStack.UserTechStackRepository;
-import com.lets.exception.CustomException;
 import com.lets.exception.ErrorResponse;
 import com.lets.security.AuthProvider;
 import com.lets.security.JwtAuthentication;
 import com.lets.security.JwtTokenProvider;
 import com.lets.security.UserPrincipal;
-import com.lets.service.tag.TagService;
-import com.lets.service.user.UserService;
 import com.lets.util.CloudinaryUtil;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
@@ -55,13 +52,8 @@ public class AuthControllerTest {
   private int port;
 
   @Autowired
-  private UserService userService;
-
-  @Autowired
   private UserRepository userRepository;
 
-  @Autowired
-  private TagService tagService;
   @Autowired
   private TagRepository tagRepository;
 
@@ -102,11 +94,6 @@ public class AuthControllerTest {
     accessToken += jwtTokenProvider.generateRefreshToken(authentication);
     refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
     refreshTokenCookie = cookieUtil.createCookie("refreshToken", refreshToken);
-
-    // Tag tag = Tag.createTag("spring");
-    // tagRepository.save(tag);
-    //
-
   }
 
   @AfterEach
@@ -260,10 +247,6 @@ public class AuthControllerTest {
 
     //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(res
-                   .getBody()
-                   .getMessage()).isEqualTo("사용 가능한 닉네임입니다.");
-
   }
 
   @Test
@@ -414,7 +397,7 @@ public class AuthControllerTest {
 
   @Test
   @DisplayName("logout메서드는 refreshToken이 없다면 400을 반환한다")
-  void 로그아웃_refresh_token_없음() {
+  void logoutWithNotRefreshToken() {
     //given
 
     String url = "http://localhost:" + port + "/api/auth/logout";
@@ -438,27 +421,24 @@ public class AuthControllerTest {
 
   @Test
   @DisplayName("logout메서드는 유저를 로그아웃 처리한다")
-  void 로그아웃_성공() {
+  void logout() {
     //given
     String url = "http://localhost:" + port + "/api/auth/logout";
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
     headers.add("Cookie", "refreshToken=" + refreshTokenCookie.getValue());
 
+
     //when
-    ResponseEntity<ApiResponseDto> responseEntity = testRestTemplate.exchange(
+    ResponseEntity<Null> response = testRestTemplate.exchange(
         url,
         HttpMethod.POST,
         new HttpEntity<>(headers),
-        ApiResponseDto.class
+        Null.class
     );
 
     //then
-    assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(responseEntity
-                   .getBody()
-                   .getMessage()).isEqualTo("로그아웃 되었습니다.");
-
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   @Test
@@ -495,19 +475,15 @@ public class AuthControllerTest {
     headers.add("Cookie", "refreshToken=" + refreshTokenCookie.getValue());
 
     //when
-    ResponseEntity<ApiResponseDto> responseEntity = testRestTemplate.exchange(
+    ResponseEntity<Null> response = testRestTemplate.exchange(
         url,
         HttpMethod.POST,
         new HttpEntity<>(headers),
-        ApiResponseDto.class
+        Null.class
     );
 
     //then
-    assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(responseEntity
-                   .getBody()
-                   .getMessage()).isEqualTo("탈퇴 되었습니다.");
-
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   @Test
@@ -517,14 +493,6 @@ public class AuthControllerTest {
     String fileFullPath = "./src/test/java/com/lets/tea.jpg";
 
     File file = new File(fileFullPath);
-
-    String encodedImage = null;
-    try {
-      FileInputStream fis = new FileInputStream(file);
-      encodedImage = Base64.encodeBase64String(fis.readAllBytes());
-    } catch (Exception e) {
-      throw new RuntimeException();
-    }
 
     String publicId = cloudinaryUtil.saveFile(file);
 
@@ -546,19 +514,14 @@ public class AuthControllerTest {
     headers.add("Cookie", "refreshToken=" + refreshTokenCookie.getValue());
 
     //when
-    ResponseEntity<ApiResponseDto> responseEntity = testRestTemplate.exchange(
+    ResponseEntity<Null> response = testRestTemplate.exchange(
         url,
         HttpMethod.POST,
         new HttpEntity<>(headers),
-        ApiResponseDto.class
+        Null.class
     );
 
     //then
-    assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(responseEntity
-                   .getBody()
-                   .getMessage()).isEqualTo("탈퇴 되었습니다.");
-    Assertions.assertThrows(CustomException.class, () -> cloudinaryUtil.deleteFile(publicId));
-
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 }
