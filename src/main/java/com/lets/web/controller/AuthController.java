@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,10 +29,9 @@ import com.lets.util.CloudinaryUtil;
 import com.lets.util.CookieUtil;
 import com.lets.util.FileUtil;
 import com.lets.util.RedisUtil;
-import com.lets.web.dto.ApiResponseDto;
 import com.lets.web.dto.auth.AuthResponseDto;
 import com.lets.web.dto.auth.LoginRequestDto;
-import com.lets.web.dto.auth.SigninResponseDto;
+import com.lets.web.dto.auth.SignInResponseDto;
 import com.lets.web.dto.auth.SignupRequestDto;
 import com.lets.web.dto.auth.SignupResponseDto;
 
@@ -56,7 +53,7 @@ public class AuthController {
    *  access token 재발급
    */
   @PostMapping("/silent-refresh")
-  public ResponseEntity<?> getAccessToken(HttpServletRequest request) {
+  public AuthResponseDto getAccessToken(HttpServletRequest request) {
 
     /**
      * cookieUtil.getCookie()를 Optional()로 반환하게 해서 더 가독성 있게 예외처리를 할 수 있지만,
@@ -94,19 +91,15 @@ public class AuthController {
     String accessToken = jwtTokenProvider.generateAccessToken(authentication);
 
     //응답
-    return new ResponseEntity(
-        new AuthResponseDto(user.getNickname(), accessToken, "OK"),
-        HttpStatus.OK
-    );
+    return AuthResponseDto.from(user.getNickname(), accessToken, "OK");
   }
 
   /**
    * 회원가입시 닉네임 중복 확인
    */
   @GetMapping("/exists")
-  public ResponseEntity<?> validateNickname(@RequestParam(required = true) String nickname) {
+  public void validateNickname(@RequestParam(required = true) String nickname) {
     userService.validateNickname(nickname);
-    return new ResponseEntity(new ApiResponseDto(true, "사용 가능한 닉네임입니다."), HttpStatus.OK);
   }
 
   /**
@@ -114,7 +107,7 @@ public class AuthController {
    */
 
   @PostMapping("/signup")
-  public ResponseEntity<?> signup(@Valid @RequestBody SignupRequestDto signupRequest) {
+  public SignupResponseDto signup(@Valid @RequestBody SignupRequestDto signupRequest) {
 
     File file = null;
     if (!signupRequest
@@ -129,17 +122,16 @@ public class AuthController {
     //프로필 URI
     String profile = cloudinaryUtil.findFileURL(saveUser.getPublicId());
 
-    return ResponseEntity.ok(
-        new SignupResponseDto(saveUser.getId(), profile, saveUser.getNickname(),
-                              saveUser.getSocialLoginId(), saveUser.getAuthProvider()
-        ));
+    return SignupResponseDto.from(saveUser.getId(), profile, saveUser.getNickname(),
+                                  saveUser.getSocialLoginId(), saveUser.getAuthProvider()
+    );
   }
 
   /**
    * 로그인
    */
   @PostMapping("/signin")
-  public ResponseEntity<?> signin(
+  public SignInResponseDto signIn(
       @Valid @RequestBody LoginRequestDto loginRequest,
       HttpServletResponse response
   ) {
@@ -170,9 +162,7 @@ public class AuthController {
     //프로필 URI
     String profile = cloudinaryUtil.findFileURL(findUser.getPublicId());
 
-    return new ResponseEntity(
-        new SigninResponseDto(profile, principal.getUsername(), accessToken, "OK"), HttpStatus.OK);
-
+    return SignInResponseDto.from(profile, principal.getUsername(), accessToken, "OK");
   }
 
   /**
@@ -186,7 +176,7 @@ public class AuthController {
      */
   @PostMapping("/logout")
   @PreAuthorize("hasRole('ROLE_USER')")
-  public ResponseEntity<?> logout(HttpServletRequest request) {
+  public void logout(HttpServletRequest request) {
     //쿠키에서 refresh token 을 찾는다.
     Cookie refreshTokenCookie = cookieUtill.getCookie(request);
 
@@ -198,8 +188,6 @@ public class AuthController {
     //refresh token 값을 얻어 레디스에서 지운다.
     String refreshToken = refreshTokenCookie.getValue();
     redisUtil.deleteData(refreshToken);
-
-    return new ResponseEntity(new ApiResponseDto(true, "로그아웃 되었습니다."), HttpStatus.OK);
   }
 
   /**
@@ -215,7 +203,7 @@ public class AuthController {
      */
   @PostMapping("/signout")
   @PreAuthorize("hasRole('ROLE_USER')")
-  public ApiResponseDto signout(
+  public void signOut(
       @AuthenticationPrincipal UserPrincipal principal,
       HttpServletRequest request
   ) {
@@ -235,7 +223,5 @@ public class AuthController {
     String refreshToken = refreshTokenCookie.getValue();
 
     redisUtil.deleteData(refreshToken);
-
-    return new ApiResponseDto(true, "탈퇴 되었습니다.");
   }
 }
