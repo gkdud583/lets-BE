@@ -98,11 +98,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
               User user = userService.findById(jwtTokenProvider.getUserIdFromJWT(refreshToken));
 
               //요청 처리하지 않고 바로 응답 보내도록 해야함
-              String res = objectMapper.writeValueAsString(new AuthResponseDto(
-                  user.getNickname(),
-                  newAccessToken,
-                  "ACCESS_TOKEN이 재발행되었습니다. 다시 요청해 주세요."
-              ));
+              String res = objectMapper.writeValueAsString(AuthResponseDto.from(user.getNickname(), newAccessToken, "ACCESS_TOKEN이 재발행되었습니다. 다시 요청해 주세요."));
               response.setStatus(HttpStatus.UNAUTHORIZED.value());
               response.setContentType("Application/json;charset=UTF-8");
 
