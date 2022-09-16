@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ import com.lets.domain.user.User;
 import com.lets.exception.CustomException;
 import com.lets.security.AuthProvider;
 import com.lets.service.user.UserService;
+import com.lets.util.CloudinaryUtil;
 import com.lets.web.dto.post.PostResponseDto;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,16 +49,24 @@ public class PostServiceTest {
   @Mock
   CommentRepository commentRepository;
 
-  User user = User.createUser("user1", "123", AuthProvider.google, "user");
-  Post post = Post.createPost(user, "title1", "content1");
-  List<Post> posts = Arrays.asList(post);
-  Tag tag = Tag.createTag("spring");
-  PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
-  List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
-  List<String> tags = Arrays.asList("spring");
-  List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
-  long commentCount = 0;
+  @Mock
+  CloudinaryUtil cloudinaryUtil;
 
+  static long postId = 1l;
+  static User user = User.createUser("user1", "123", AuthProvider.google, "user");
+  static Post post = Post.createPost(user, "title1", "content1");
+  static List<Post> posts = Arrays.asList(post);
+  static Tag tag = Tag.createTag("spring");
+  static PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
+  static List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
+  static List<String> tags = Arrays.asList("spring");
+  static List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
+  static long commentCount = 0;
+
+  @BeforeAll
+  static void setup() {
+    ReflectionTestUtils.setField(post, "id", postId);
+  }
   @Test
   @DisplayName("findById메서드는 아이디로 글을 조회한다")
   void findById() {
@@ -95,8 +105,11 @@ public class PostServiceTest {
   void findPosts() {
     //given
     long userId = 1l;
+    String profile = "default";
     given(userService.findById(anyLong()))
         .willReturn(user);
+    given(cloudinaryUtil.findFileURL(anyString()))
+        .willReturn(profile);
     given(postTechStackRepository.findAllByUser(any(User.class)))
         .willReturn(postTechStacks);
     given(commentRepository.countByPost(any(Post.class)))

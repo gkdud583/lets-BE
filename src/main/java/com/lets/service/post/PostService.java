@@ -10,9 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
-import com.lets.domain.comment.Comment;
 import com.lets.domain.comment.CommentRepository;
 import com.lets.domain.likePost.LikePost;
 import com.lets.domain.likePost.LikePostRepository;
@@ -29,6 +27,7 @@ import com.lets.exception.CustomException;
 import com.lets.exception.ErrorCode;
 import com.lets.service.user.UserService;
 import com.lets.util.CloudinaryUtil;
+import com.lets.web.dto.comment.CommentResponseDto;
 import com.lets.web.dto.comment.CommentSearchRequestDto;
 import com.lets.web.dto.likepost.ChangeLikePostStatusResponseDto;
 import com.lets.web.dto.post.PostCommentResponseDto;
@@ -90,28 +89,6 @@ public class PostService {
     return findPostsTags(postTechStacks);
   }
 
-  private List<PostResponseDto> findPostsTags(List<PostTechStack> postTechStacks) {
-    //postTechStack에서 post정보만 리스트로 추출
-    LinkedHashSet<Post> posts = postTechStacks
-        .stream()
-        .map(PostTechStack::getPost)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-
-    //각 post 의 태그 정보 조립
-    ArrayList<PostResponseDto> postDtos = new ArrayList<>();
-    for (Post post : posts) {
-      List<Tag> tags = postTechStacks
-          .stream()
-          .filter(postTechStack -> postTechStack
-              .getPost()
-              .getId() == post.getId())
-          .map(postTechStack -> postTechStack.getTag())
-          .collect(Collectors.toList());
-      Long commentCount = commentRepository.countByPost(post);
-      postDtos.add(PostResponseDto.from(post, tags, null, commentCount));
-    }
-    return postDtos;
-  }
 
   @Transactional
   public PostResponseDto savePost(
@@ -127,16 +104,26 @@ public class PostService {
     postRepository.save(post);
 
     List<Tag> tags = tagRepository.findAllByNameIn(postSaveRequestDto.getTags());
-    List<PostTechStack> postTechStackList = new ArrayList<>();
-    for (Tag tag : tags) {
-      PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
-      postTechStackList.add(postTechStack);
-    }
 
-    postTechStackRepository.saveAll(postTechStackList);
+    List<PostTechStack> postTechStacks = createPostTechStacks(tags, post);
+
+    postTechStackRepository.saveAll(postTechStacks);
+
     String profile = cloudinaryUtil.findFileURL(user.getPublicId());
 
-    return PostResponseDto.from(post, tags, profile, 0L);
+    List<String> tagNames = createTagNames(tags);
+
+    return PostResponseDto.from(
+        profile,
+        post.getId(),
+        post.getTitle(),
+        post.getContent(),
+        post.getLikeCount(),
+        post.getViewCount(),
+        post.getStatus(),
+        tagNames,
+        0l
+    );
   }
 
   @Transactional
@@ -157,15 +144,27 @@ public class PostService {
 
     postTechStackRepository.deleteAllByPost(Arrays.asList(post));
 
-    List<PostTechStack> postTechStackList = new ArrayList<>();
-    for (Tag tag : tags) {
-      PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
-      postTechStackList.add(postTechStack);
-    }
-    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
-    postTechStackRepository.saveAll(postTechStackList);
+    List<PostTechStack> postTechStacks = createPostTechStacks(tags, post);
 
-    return PostResponseDto.from(post, tags, profile, 0L);
+    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
+    postTechStackRepository.saveAll(postTechStacks);
+
+    List<String> tagsNames = tags
+        .stream()
+        .map(tag -> tag.getName())
+        .collect(Collectors.toList());
+
+    return PostResponseDto.from(
+        profile,
+        post.getId(),
+        post.getTitle(),
+        post.getContent(),
+        post.getLikeCount(),
+        post.getViewCount(),
+        post.getStatus(),
+        tagsNames,
+        0l
+    );
   }
 
   @Transactional
@@ -188,53 +187,77 @@ public class PostService {
 
   @Transactional
   public PostCommentResponseDto findPost(
-      User user,
-      Long postId
+      Long userId,
+      long postId
   ) {
-    Post post = postRepository
-        .findOneById(postId)
-        .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+    Post post = findById(postId);
 
-    LikePost likePost = null;
-    String profile = null;
-    String nickname = null;
+    String profile = cloudinaryUtil.findFileURL(post
+                                                    .getUser()
+                                                    .getPublicId());
 
-    if (!ObjectUtils.isEmpty(post.getUser())) {
-      profile = cloudinaryUtil.findFileURL(post
-                                               .getUser()
-                                               .getPublicId());
-      nickname = post
-          .getUser()
-          .getNickname();
-    }
+    List<String> tags = postTechStackRepository
+        .findAllByPosts(Collections.singletonList(
+            post))
+        .stream()
+        .map(postTechStack -> postTechStack
+            .getTag()
+            .getName())
+        .collect(
+            Collectors.toList());
 
-    if (user != null) {
-      likePost = likePostRepository
-          .findByUserIdAndPostId(user.getId(), postId)
-          .orElseGet(() -> {
-            LikePost likePostCreate = LikePost.createLikePost(user, post);
-            post.addView();
-            return likePostRepository.save(likePostCreate);
-          });
-    }
+    List<CommentResponseDto> comments = commentRepository
+        .findComments(new CommentSearchRequestDto(post))
+        .stream()
+        .map(comment -> CommentResponseDto.from(
+            comment,
+            cloudinaryUtil.findFileURL(comment
+                                           .getUser()
+                                           .getPublicId())
+        ))
+        .collect(Collectors.toList());
 
-    List<PostTechStack> postTechStackList = postTechStackRepository.findAllByPosts(Collections.singletonList(
-        post));
-    List<Tag> tags = new ArrayList<>();
-    for (PostTechStack postTechStack : postTechStackList) {
-      tags.add(postTechStack.getTag());
-
-    }
-
-    List<Comment> comments = commentRepository.findComments(new CommentSearchRequestDto(post));
-    return PostCommentResponseDto.PostToDto(
-        post,
-        likePost == null ? LikePostStatus.INACTIVE : likePost.getStatus(),
-        tags,
-        comments,
+    PostResponseDto postResponse = PostResponseDto.from(
         profile,
-        cloudinaryUtil,
-        nickname
+        post.getId(),
+        post.getTitle(),
+        post.getContent(),
+        post.getLikeCount(),
+        post.getViewCount(),
+        post.getStatus(),
+        tags,
+        comments.size()
+    );
+
+    if (userId == null) {
+      return PostCommentResponseDto.from(
+          postResponse,
+          LikePostStatus.INACTIVE,
+          post.getCreatedDate(),
+          comments,
+          post
+              .getUser()
+              .getNickname()
+      );
+    }
+
+    User user = userService.findById(userId);
+    LikePost likePost = likePostRepository
+        .findByUserIdAndPostId(userId, postId)
+        .orElseGet(() -> {
+          LikePost likePostCreate = LikePost.createLikePost(user, post);
+          post.addView();
+          return likePostRepository.save(likePostCreate);
+        });
+
+    return PostCommentResponseDto.from(
+        postResponse,
+        likePost.getStatus(),
+        post.getCreatedDate(),
+        comments,
+        post
+            .getUser()
+            .getNickname()
     );
   }
 
@@ -300,7 +323,10 @@ public class PostService {
   }
 
   @Transactional
-  public PostStatus changePostStatus(long userId, long postId) {
+  public PostStatus changePostStatus(
+      long userId,
+      long postId
+  ) {
     User user = userService.findById(userId);
     Post post = findById(postId);
 
@@ -309,5 +335,57 @@ public class PostService {
     }
 
     return post.changeStatus();
+  }
+
+  private List<PostResponseDto> findPostsTags(List<PostTechStack> postTechStacks) {
+    //postTechStack에서 post정보만 리스트로 추출
+    LinkedHashSet<Post> posts = postTechStacks
+        .stream()
+        .map(PostTechStack::getPost)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    //각 post 의 태그 정보 조립
+    ArrayList<PostResponseDto> postDtos = new ArrayList<>();
+    for (Post post : posts) {
+      List<String> tags = postTechStacks
+          .stream()
+          .filter(postTechStack -> postTechStack
+              .getPost()
+              .getId() == post.getId())
+          .map(postTechStack -> postTechStack
+              .getTag()
+              .getName())
+          .collect(Collectors.toList());
+      Long commentCount = commentRepository.countByPost(post);
+      User user = post.getUser();
+      String profile = cloudinaryUtil.findFileURL(user.getPublicId());
+
+      postDtos.add(PostResponseDto.from(
+          profile,
+          post.getId(),
+          post.getTitle(),
+          post.getContent(),
+          post.getLikeCount(),
+          post.getViewCount(),
+          post.getStatus(),
+          tags,
+          commentCount
+      ));
+    }
+    return postDtos;
+  }
+
+  private List<String> createTagNames(List<Tag> tags) {
+    return tags
+        .stream()
+        .map(tag -> tag.getName())
+        .collect(Collectors.toList());
+  }
+
+  private List<PostTechStack> createPostTechStacks(
+      List<Tag> tags,
+      Post post
+  ) {
+    return tags.stream().map(tag -> PostTechStack.createPostTechStack(tag, post)).collect(Collectors.toList());
   }
 }

@@ -1,22 +1,19 @@
 package com.lets.web.dto.post;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.lets.domain.post.Post;
 import com.lets.domain.post.PostStatus;
-import com.lets.domain.tag.Tag;
 
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 /**
  * 글 검색 응답에 사용하는 DTO
  * 글 검색시 LikePostStatus는 필요없으므로 추가하지 않았음.
  */
 @Getter
-@NoArgsConstructor
+@Builder(access = AccessLevel.PRIVATE)
 public class PostResponseDto {
   private String profile;
 
@@ -26,7 +23,7 @@ public class PostResponseDto {
 
   private Long viewCount;
 
-  private List<String> tags = new ArrayList<>();
+  private List<String> tags;
 
   private PostStatus status;
 
@@ -36,32 +33,27 @@ public class PostResponseDto {
 
   private Long commentCount;
 
-  public PostResponseDto(
-      Post post,
-      List<Tag> tags,
-      String profile,
-      Long commentCount
-  ) {
-    this.profile = profile;
-    this.id = post.getId();
-    this.title = post.getTitle();
-    this.content = post.getContent();
-    this.likeCount = post.getLikeCount();
-    this.viewCount = post.getViewCount();
-    this.status = post.getStatus();
-    this.tags = tags
-        .stream()
-        .map(tag -> tag.getName())
-        .collect(Collectors.toList());
-    this.commentCount = commentCount;
-  }
-
   public static PostResponseDto from(
-      Post post,
-      List<Tag> tags,
       String profile,
-      Long commentCount
+      long id,
+      String title,
+      String content,
+      long likeCount,
+      long viewCount,
+      PostStatus status,
+      List<String> tags,
+      long commentCount
   ) {
-    return new PostResponseDto(post, tags, profile, commentCount);
+    return PostResponseDto.builder()
+        .profile(profile)
+        .id(id)
+        .title(title)
+        .content(content)
+        .likeCount(likeCount)
+        .viewCount(viewCount)
+        .status(status)
+        .tags(tags)
+        .commentCount(commentCount)
+        .build();
   }
 }

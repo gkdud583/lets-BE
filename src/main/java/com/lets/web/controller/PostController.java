@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lets.domain.user.User;
 import com.lets.security.UserPrincipal;
 import com.lets.service.post.PostService;
 import com.lets.service.user.UserService;
@@ -77,12 +76,11 @@ public class PostController {
       @AuthenticationPrincipal UserPrincipal principal,
       @PathVariable("postId") Long postId
   ) {
-    User findUser = null;
-    if (principal != null) {
-      findUser = userService.findById(principal.getId());
+    if (principal == null) {
+      return postService.findPost(null, postId);
     }
 
-    return postService.findPost(findUser, postId);
+    return postService.findPost(principal.getId(), postId);
   }
 
   @DeleteMapping("/{postId}")
