@@ -57,6 +57,7 @@ import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
 import com.lets.web.dto.ApiResponseDto;
 import com.lets.web.dto.likepost.ChangeLikePostStatusResponseDto;
+import com.lets.web.dto.post.ChangePostStatusResponseDto;
 import com.lets.web.dto.post.PostRecommendResponseDto;
 import com.lets.web.dto.post.PostResponseDto;
 import com.lets.web.dto.post.PostSaveRequestDto;
@@ -117,6 +118,8 @@ public class PostControllerTest {
 
   private User user;
   private User user2;
+
+  private Post post;
   private UserPrincipal principal;
   private Authentication authentication;
   private String accessToken = "Bearer ";
@@ -140,7 +143,7 @@ public class PostControllerTest {
     tagRepository.save(tag3);
     tagRepository.save(tag4);
 
-    Post post1 = Post.createPost(user, "title1", "content1");
+    post = Post.createPost(user, "title1", "content1");
     Post post2 = Post.createPost(user2, "title2", "content2");
     Post post3 = Post.createPost(user2, "title3", "content3");
     Post post4 = Post.createPost(user2, "title4", "content4");
@@ -148,16 +151,16 @@ public class PostControllerTest {
     Post post6 = Post.createPost(user, "title6", "content6");
     post6.addView();
 
-    postRepository.save(post1);
+    postRepository.save(post);
     postRepository.save(post2);
     postRepository.save(post3);
     postRepository.save(post4);
     postRepository.save(post5);
     postRepository.save(post6);
-    likePostRepository.save(LikePost.createLikePost(user, post1));
-    commentRepository.save(Comment.createComment(user, post1, "content1"));
+    likePostRepository.save(LikePost.createLikePost(user, post));
+    commentRepository.save(Comment.createComment(user, post, "content1"));
 
-    PostTechStack postTechStack1 = PostTechStack.createPostTechStack(tag1, post1);
+    PostTechStack postTechStack1 = PostTechStack.createPostTechStack(tag1, post);
     //검색할 대상
     PostTechStack postTechStack2 = PostTechStack.createPostTechStack(tag2, post2);
     PostTechStack postTechStack3 = PostTechStack.createPostTechStack(tag3, post2);
@@ -180,7 +183,7 @@ public class PostControllerTest {
     principal = UserPrincipal.create(user);
 
     authentication = new JwtAuthentication(principal);
-    accessToken += jwtTokenProvider.generateRefreshToken(authentication);
+    accessToken += jwtTokenProvider.generateAccessToken(authentication);
     refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
     refreshTokenCookie = cookieUtil.createCookie("refreshToken", refreshToken);
 
@@ -545,5 +548,56 @@ public class PostControllerTest {
         .forEach(r -> {
           System.out.println("r.getTitle() = " + r.getTitle());
         });
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 모집 상태를 변경한다")
+  void changePostStatus() {
+    //given
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId()  + "/status";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    //when
+    ResponseEntity<ChangePostStatusResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.POST,
+        new HttpEntity<>(headers),
+        new ParameterizedTypeReference<ChangePostStatusResponseDto>() {
+        }
+    );
+
+    //then
+    assertThat(res
+                   .getBody()
+                       .getStatus()).isEqualTo(PostStatus.COMPLETE);
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 유저가 작성자가 아니라면 401를 반환한다")
+  void changePostStatusWithNotWriter() {
+    //given
+    User newUser = User.createUser("newUser", "123456", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    Post post = Post.createPost(newUser, "title", "content");
+    postRepository.save(post);
+
+
+    String url = "http://localhost:" + port + "/api/posts/+ " + post.getId() + "/status";
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    //when
+    ResponseEntity<ChangePostStatusResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.POST,
+        new HttpEntity<>(headers),
+        ChangePostStatusResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
   }
 }

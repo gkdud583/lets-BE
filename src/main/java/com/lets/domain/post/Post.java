@@ -108,6 +108,14 @@ public class Post extends BaseTimeEntity {
     return this;
   }
 
+  public PostStatus changeStatus() {
+    if (this.status == PostStatus.COMPLETE) {
+      this.status = PostStatus.RECRUITING;
+      return this.status;
+    }
+    this.status = PostStatus.COMPLETE;
+    return this.status;
+  }
   @Override
   public String toString() {
     return "Post{" +

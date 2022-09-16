@@ -23,6 +23,7 @@ import com.lets.service.post.PostService;
 import com.lets.service.user.UserService;
 import com.lets.web.dto.ApiResponseDto;
 import com.lets.web.dto.likepost.ChangeLikePostStatusResponseDto;
+import com.lets.web.dto.post.ChangePostStatusResponseDto;
 import com.lets.web.dto.post.PostCommentResponseDto;
 import com.lets.web.dto.post.PostRecommendRequestDto;
 import com.lets.web.dto.post.PostRecommendResponseDto;
@@ -104,6 +105,16 @@ public class PostController {
   ) {
     return postService.changeLikeStatus(principal.getId(), postId);
   }
+
+  @PostMapping("/{postId}/status")
+  @PreAuthorize("hasRole('ROLE_USER')")
+  public ChangePostStatusResponseDto changePostStatus(
+      @AuthenticationPrincipal UserPrincipal principal,
+      @PathVariable("postId") long postId
+  ) {
+    return ChangePostStatusResponseDto.of(postService.changePostStatus(principal.getId(), postId));
+  }
+
 
   @GetMapping("/{postId}/recommends")
   public List<PostRecommendResponseDto> recommendedPosts(

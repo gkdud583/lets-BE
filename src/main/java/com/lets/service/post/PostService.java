@@ -19,6 +19,7 @@ import com.lets.domain.likePost.LikePostRepository;
 import com.lets.domain.likePost.LikePostStatus;
 import com.lets.domain.post.Post;
 import com.lets.domain.post.PostRepository;
+import com.lets.domain.post.PostStatus;
 import com.lets.domain.postTechStack.PostTechStack;
 import com.lets.domain.postTechStack.PostTechStackRepository;
 import com.lets.domain.tag.Tag;
@@ -296,5 +297,17 @@ public class PostService {
     }
 
     return list;
+  }
+
+  @Transactional
+  public PostStatus changePostStatus(long userId, long postId) {
+    User user = userService.findById(userId);
+    Post post = findById(postId);
+
+    if (!user.isWriterOf(post)) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+    }
+
+    return post.changeStatus();
   }
 }

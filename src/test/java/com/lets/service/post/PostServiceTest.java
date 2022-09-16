@@ -14,11 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.lets.domain.comment.CommentRepository;
 import com.lets.domain.likePost.LikePost;
 import com.lets.domain.post.Post;
 import com.lets.domain.post.PostRepository;
+import com.lets.domain.post.PostStatus;
 import com.lets.domain.postTechStack.PostTechStack;
 import com.lets.domain.postTechStack.PostTechStackRepository;
 import com.lets.domain.tag.Tag;
@@ -127,5 +129,56 @@ public class PostServiceTest {
     assertThat(result
                    .get(0)
                    .getViewCount()).isEqualTo(post.getViewCount());
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 모집 상태를 변경한다")
+  void changePostStatus() {
+    //given
+    long userId = 1l;
+    long postId = 1l;
+    User newUser = User.createUser("newUser", "12345", AuthProvider.google, "default");
+    ReflectionTestUtils.setField(newUser, "id", userId);
+
+    Post newPost = Post.createPost(newUser, "title", "content");
+
+    given(userService.findById(anyLong()))
+        .willReturn(newUser);
+    given(postRepository.findById(anyLong()))
+        .willReturn(Optional.of(newPost));
+
+
+    //when
+    PostStatus postStatus = postService.changePostStatus(userId, postId);
+
+    //then
+    assertThat(postStatus).isEqualTo(PostStatus.COMPLETE);
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 유저가 작성자가 아니라면 예외를 던진다")
+  void changePostStatusWithNotWriter() {
+    //given
+    long userId = 1l;
+    long postId = 1l;
+    User newUser1 = User.createUser("newUser", "12345", AuthProvider.google, "default");
+    ReflectionTestUtils.setField(newUser1, "id", userId);
+
+    Post newPost = Post.createPost(newUser1, "title", "content");
+
+    User newUser2 = User.createUser("newUser2", "124566", AuthProvider.google, "default");
+
+    given(userService.findById(anyLong()))
+        .willReturn(newUser2);
+    given(postRepository.findById(anyLong()))
+        .willReturn(Optional.of(newPost));
+
+
+    //when, then
+    assertThatThrownBy(() -> {
+      postService.changePostStatus(userId, postId);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("접근 권한이 없습니다.");
   }
 }
