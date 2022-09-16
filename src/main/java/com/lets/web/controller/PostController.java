@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lets.security.UserPrincipal;
 import com.lets.service.post.PostService;
-import com.lets.service.user.UserService;
-import com.lets.web.dto.ApiResponseDto;
 import com.lets.web.dto.likepost.ChangeLikePostStatusResponseDto;
 import com.lets.web.dto.post.ChangePostStatusResponseDto;
 import com.lets.web.dto.post.PostCommentResponseDto;
@@ -38,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/posts")
 public class PostController {
   private final PostService postService;
-  private final UserService userService;
 
   /**
    * 글 검색
@@ -74,7 +71,7 @@ public class PostController {
   @GetMapping("/{postId}")
   public PostCommentResponseDto findPost(
       @AuthenticationPrincipal UserPrincipal principal,
-      @PathVariable("postId") Long postId
+      @PathVariable("postId") long postId
   ) {
     if (principal == null) {
       return postService.findPost(null, postId);
@@ -85,21 +82,18 @@ public class PostController {
 
   @DeleteMapping("/{postId}")
   @PreAuthorize("hasRole('ROLE_USER')")
-  public ApiResponseDto deletePost(
+  public void deletePost(
       @AuthenticationPrincipal UserPrincipal principal,
-      @PathVariable("postId") Long postId
+      @PathVariable("postId") long postId
   ) {
-    Long userId = principal.getId();
-    postService.deletePost(userId, postId);
-
-    return new ApiResponseDto(true, "게시글이 삭제 되었습니다.");
+    postService.deletePost(principal.getId(), postId);
   }
 
   @PostMapping("/{postId}/likes")
   @PreAuthorize("hasRole('ROLE_USER')")
   public ChangeLikePostStatusResponseDto changeLikeStatus(
       @AuthenticationPrincipal UserPrincipal principal,
-      @PathVariable("postId") Long postId
+      @PathVariable("postId") long postId
   ) {
     return postService.changeLikeStatus(principal.getId(), postId);
   }
@@ -115,15 +109,14 @@ public class PostController {
 
 
   @GetMapping("/{postId}/recommends")
-  public List<PostRecommendResponseDto> recommendedPosts(
+  public List<PostRecommendResponseDto> recommendPosts(
       @AuthenticationPrincipal UserPrincipal principal,
-      @PathVariable("postId") Long id,
+      @PathVariable("postId") long postId,
       @ModelAttribute PostRecommendRequestDto postRecommendRequestDto
   ) {
-    Long userId = null;
-    if (principal != null) {
-      userId = principal.getId();
+    if (principal == null) {
+      return postService.recommendPosts(null, postId, postRecommendRequestDto);
     }
-    return postService.recommendedPosts(userId, id, postRecommendRequestDto);
+    return postService.recommendPosts(principal.getId(), postId, postRecommendRequestDto);
   }
 }

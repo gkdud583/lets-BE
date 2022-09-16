@@ -1,10 +1,12 @@
 package com.lets.web;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.http.HttpStatus.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.Cookie;
 
@@ -29,7 +31,6 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lets.domain.comment.Comment;
 import com.lets.domain.comment.CommentRepository;
 import com.lets.domain.likePost.LikePost;
@@ -67,7 +68,6 @@ import com.lets.web.dto.post.PostUpdateRequestDto;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 
 public class PostControllerTest {
-  private Long userId;
   @LocalServerPort
   private int port;
 
@@ -117,9 +117,9 @@ public class PostControllerTest {
   private JwtTokenProvider jwtTokenProvider;
 
   private User user;
-  private User user2;
-
   private Post post;
+
+  private Tag tag;
   private UserPrincipal principal;
   private Authentication authentication;
   private String accessToken = "Bearer ";
@@ -128,57 +128,21 @@ public class PostControllerTest {
 
   @BeforeEach
   void before() {
-    user = User.createUser("user2", "123", AuthProvider.google, "default");
-    user2 = User.createUser("user3", "321", AuthProvider.google, "default");
+    user = User.createUser("user", "123", AuthProvider.google, "default");
     userRepository.save(user);
-    userRepository.save(user2);
 
-    Tag tag1 = Tag.createTag("spring");
-    Tag tag2 = Tag.createTag("java");
-    Tag tag3 = Tag.createTag("python");
-    Tag tag4 = Tag.createTag("c");
-
-    tagRepository.save(tag1);
-    tagRepository.save(tag2);
-    tagRepository.save(tag3);
-    tagRepository.save(tag4);
+    tag = Tag.createTag("spring");
+    tagRepository.save(tag);
 
     post = Post.createPost(user, "title1", "content1");
-    Post post2 = Post.createPost(user2, "title2", "content2");
-    Post post3 = Post.createPost(user2, "title3", "content3");
-    Post post4 = Post.createPost(user2, "title4", "content4");
-    Post post5 = Post.createPost(user2, "title5", "content5");
-    Post post6 = Post.createPost(user, "title6", "content6");
-    post6.addView();
 
     postRepository.save(post);
-    postRepository.save(post2);
-    postRepository.save(post3);
-    postRepository.save(post4);
-    postRepository.save(post5);
-    postRepository.save(post6);
-    likePostRepository.save(LikePost.createLikePost(user, post));
+
     commentRepository.save(Comment.createComment(user, post, "content1"));
 
-    PostTechStack postTechStack1 = PostTechStack.createPostTechStack(tag1, post);
-    //검색할 대상
-    PostTechStack postTechStack2 = PostTechStack.createPostTechStack(tag2, post2);
-    PostTechStack postTechStack3 = PostTechStack.createPostTechStack(tag3, post2);
-    PostTechStack postTechStack4 = PostTechStack.createPostTechStack(tag4, post2);
-    //검색될 대상
-    PostTechStack postTechStack5 = PostTechStack.createPostTechStack(tag2, post3);
-    PostTechStack postTechStack6 = PostTechStack.createPostTechStack(tag3, post4);
-    PostTechStack postTechStack7 = PostTechStack.createPostTechStack(tag4, post5);
-    PostTechStack postTechStack8 = PostTechStack.createPostTechStack(tag4, post6);
+    PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
 
-    postTechStackService.save(postTechStack1);
-    postTechStackService.save(postTechStack2);
-    postTechStackService.save(postTechStack3);
-    postTechStackService.save(postTechStack4);
-    postTechStackService.save(postTechStack5);
-    postTechStackService.save(postTechStack6);
-    postTechStackService.save(postTechStack7);
-    postTechStackService.save(postTechStack8);
+    postTechStackService.save(postTechStack);
 
     principal = UserPrincipal.create(user);
 
@@ -201,64 +165,111 @@ public class PostControllerTest {
   }
 
   @Test
-  @DisplayName("findPost메서드는 아이디로 포스트를 조회한다")
-  void findPost() {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-    //LogIn
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", accessToken);
-
-    String url = "http://localhost:" + port + "/api/posts/" + id;
-    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
-        url,
-        HttpMethod.GET,
-        new HttpEntity<>(headers),
-        new ParameterizedTypeReference<PostResponseDto>() {
-        }
-    );
-
-    assertThat(res
-                   .getBody()
-                   .getId()).isEqualTo(id);
-    assertThat(res
-                   .getBody()
-                   .getViewCount()).isEqualTo(0);
-  }
-
-  @Test
-  @DisplayName("findPost메서드는 아이디로 포스트를 조회한다")
-  void findPostWithoutLogin() {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-
-    String url = "http://localhost:" + port + "/api/posts/" + id;
+  @DisplayName("findPost메서드는 로그인한 유저가 아니라면 아이디로 포스트를 조회한다")
+  void findPostWithNotUser() {
+    // given
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
         url,
         HttpMethod.GET,
         null,
-        new ParameterizedTypeReference<PostResponseDto>() {
-        }
+        PostResponseDto.class
     );
 
     assertThat(res
                    .getBody()
-                   .getId()).isEqualTo(id);
+                   .getId()).isEqualTo(post.getId());
     assertThat(res
                    .getBody()
                    .getViewCount()).isEqualTo(0);
+    Optional<LikePost> likePost = likePostRepository.findByUserIdAndPostId(
+        user.getId(),
+        post.getId()
+    );
+    assertThat(likePost).isEmpty();
   }
 
   @Test
-  @DisplayName("savePost메서드는 포스트 한건을 저장한다")
+  @DisplayName("findPost메서드는 유저가 존재한다면 아이디로 포스트를 조회하고 조회한 포스트로 추가한다")
+  void findPost() {
+    // given
+    long expectedViewCount = post.getViewCount() + 1;
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.GET,
+        new HttpEntity<>(headers),
+        PostResponseDto.class
+    );
+
+    assertThat(res
+                   .getBody()
+                   .getId()).isEqualTo(post.getId());
+    assertThat(res
+                   .getBody()
+                   .getViewCount()).isEqualTo(expectedViewCount);
+    Optional<LikePost> likePost = likePostRepository.findByUserIdAndPostId(
+        user.getId(),
+        post.getId()
+    );
+    assertThat(likePost).isNotEmpty();
+  }
+  @Test
+  @DisplayName("findPost메서드는 존재하지 않는 아이디라면 404를 반환한다")
+  void findPostWithNonexistentPost() {
+    // given
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    long postId = -1;
+    String url = "http://localhost:" + port + "/api/posts/" + postId;
+    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.GET,
+        new HttpEntity<>(headers),
+        PostResponseDto.class
+    );
+
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("findPost메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void findPostWithNonexistentUser() {
+    // given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    userRepository.delete(newUser);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.GET,
+        new HttpEntity<>(headers),
+        PostResponseDto.class
+    );
+
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("savePost메서드는 포스트 한 건을 저장한다")
   void savePost() throws Exception {
     String title = "title444";
     String content = "content";
-    List<String> tags = List.of("spring", "java");
+    List<String> tags = List.of("spring");
 
     //LogIn
     HttpHeaders headers = new HttpHeaders();
@@ -267,58 +278,64 @@ public class PostControllerTest {
     //post등록
     String url = "http://localhost:" + port + "/api/posts";
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
     RequestEntity<PostSaveRequestDto> body = RequestEntity
         .post(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
         .body(new PostSaveRequestDto(title, content, tags));
+
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
         body,
-        new ParameterizedTypeReference<PostResponseDto>() {
-        }
+        PostResponseDto.class
     );
-    System.out.println("_____________________________");
-    System.out.println(res.getStatusCode());
-    assertThat(res
-                   .getBody()
-                   .getTitle()).isEqualTo("title444");
+
+    assertThat(res.getBody().getTags().size()).isEqualTo(tags.size());
+    assertThat(res.getBody().getTitle()).isEqualTo(title);
+    assertThat(res.getBody().getContent()).isEqualTo(content);
+    assertThat(res.getBody().getViewCount()).isEqualTo(0);
+    assertThat(res.getBody().getLikeCount()).isEqualTo(0);
+    assertThat(res.getBody().getCommentCount()).isEqualTo(0);
   }
 
   @Test
-  @DisplayName("savePost메서드는 존재하지 않는 유저라면 401을 반환한다")
-  void 포스트_등록_유저정보없음() throws Exception {
+  @DisplayName("savePost메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void savePostWithNonexistentUser() throws Exception {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    userRepository.delete(newUser);
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
     String title = "title444";
     String content = "content";
-    List<String> tags = List.of("spring", "java");
+    List<String> tags = List.of("spring");
 
     //LogIn
     HttpHeaders headers = new HttpHeaders();
-    //        headers.add("Authorization",  accessToken);
+    headers.add("Authorization",  accessToken);
 
-    //post등록
     String url = "http://localhost:" + port + "/api/posts";
 
+    //when
     RequestEntity<PostSaveRequestDto> body = RequestEntity
         .post(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
         .body(new PostSaveRequestDto(title, content, tags));
+
     ResponseEntity<Object> res = testRestTemplate.exchange(body, Object.class);
-    System.out.println("_____________________________");
-    System.out.println(res.getStatusCode());
-    assertThat(res.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
   }
 
   @Test
   @DisplayName("updatePost메서드는 포스트를 수정한다")
   void updatePost() throws Exception {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-
     String title = "title44";
     String content = "content44";
     List<String> tags = List.of("spring");
@@ -328,9 +345,7 @@ public class PostControllerTest {
     headers.add("Authorization", accessToken);
 
     //post등록
-    String url = "http://localhost:" + port + "/api/posts/" + id;
-
-    ObjectMapper objectMapper = new ObjectMapper();
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
 
     RequestEntity<PostUpdateRequestDto> body = RequestEntity
         .put(new URI(url))
@@ -339,84 +354,211 @@ public class PostControllerTest {
         .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
         body,
-        new ParameterizedTypeReference<PostResponseDto>() {
-        }
+        PostResponseDto.class
     );
-    System.out.println("_____________________________");
-    System.out.println(res.getStatusCode());
+
     assertThat(res
                    .getBody()
-                   .getTitle()).isEqualTo("title44");
+                   .getTitle()).isEqualTo(title);
+    assertThat(res.getBody().getContent()).isEqualTo(content);
   }
 
   @Test
-  @DisplayName("updatePost메서드는 수정권한이 없는 유저라면 401을 반환한다")
-  void updatePostWithUnauthorizedUser() throws Exception {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-
+  @DisplayName("updatePost메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void updatePostWithNonexistentUser() throws Exception {
+    //given
     String title = "title44";
     String content = "content44";
     List<String> tags = List.of("spring");
 
-    //LogIn
-    HttpHeaders headers = new HttpHeaders();
-    //        headers.add("Authorization",  accessToken);
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
 
-    //post등록
-    String url = "http://localhost:" + port + "/api/posts/" + id;
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    userRepository.delete(newUser);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+
     RequestEntity<PostUpdateRequestDto> body = RequestEntity
         .put(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
         .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+
+    //when
+    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
+        body,
+        PostResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("updatePost메서드는 존재하지 않는 글이라면 404를 반환한다")
+  void updatePostWithNonexistentPost() throws Exception {
+    //given
+    long postId = -1l;
+
+    String title = "title44";
+    String content = "content44";
+    List<String> tags = List.of("spring");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + postId;
+
+    RequestEntity<PostUpdateRequestDto> body = RequestEntity
+        .put(new URI(url))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(headers)
+        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+
+    //when
+    ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
+        body,
+        PostResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+  @Test
+  @DisplayName("updatePost메서드는 수정권한이 없는 유저라면 401을 반환한다")
+  void updatePostWithUnauthorizedUser() throws Exception {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    String title = "title44";
+    String content = "content44";
+    List<String> tags = List.of("spring");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization",  accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+    RequestEntity<PostUpdateRequestDto> body = RequestEntity
+        .put(new URI(url))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(headers)
+        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+
+    //when
     ResponseEntity<Object> res = testRestTemplate.exchange(body, Object.class);
-    System.out.println("_____________________________");
-    System.out.println(res.getStatusCode());
+
+    //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
   }
 
   @Test
-  @DisplayName("deletePost메서드는 포스트를 삭제한다")
-  void deletePost() {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
+  @DisplayName("deletePost메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void deletePostWithNonexistentUser() {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
 
-    //LogIn
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    userRepository.delete(newUser);
+
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
-    headers.add("contentType", "application/json");
 
-    //post등록
-    String url = "http://localhost:" + port + "/api/posts/" + id;
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+
+    //when
     ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
         url,
         HttpMethod.DELETE,
         new HttpEntity<>(headers),
         ApiResponseDto.class
     );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("deletePost메서드는 존재하지 않는 글이라면 404를 반환한다")
+  void deletePostWithNonexistentPost() {
+    //given
+    long postId = -1;
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + postId;
+
+    //when
+    ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.DELETE,
+        new HttpEntity<>(headers),
+        ApiResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+  @Test
+  @DisplayName("deletePost메서드는 포스트를 삭제한다")
+  void deletePost() {
+    //given
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+    headers.add("contentType", "application/json");
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+
+    //when
+    ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.DELETE,
+        new HttpEntity<>(headers),
+        ApiResponseDto.class
+    );
+
+    //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
   @Test
   @DisplayName("deletePost메서드는 삭제 권한이 없는 유저라면 401을 반환한다")
   void deletePostWithUnauthorizedUser() {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
 
-    //LogIn
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
     HttpHeaders headers = new HttpHeaders();
-    //        headers.add("Authorization",  accessToken);
+    headers.add("Authorization",  accessToken);
     headers.add("contentType", "application/json");
 
-    //post등록
-    String url = "http://localhost:" + port + "/api/posts/" + id;
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId();
+
+    //when
     ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
         url,
         HttpMethod.DELETE,
@@ -429,44 +571,65 @@ public class PostControllerTest {
   @Test
   @DisplayName("changeLikeStatus메서드는 좋아요 상태를 변경한다")
   void changeLikeStatus() throws URISyntaxException {
-    Long id = postRepository
-        .findAll()
-        .get(0)
-        .getId();
+    //given
+    LikePost likePost = LikePost.createLikePost(user, post);
+    likePostRepository.save(likePost);
 
-    //LogIn
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
 
-    //post등록
-    String searchUrl = "http://localhost:" + port + "/api/posts/" + id;
-    ResponseEntity<PostResponseDto> searchRes = testRestTemplate.exchange(
-        searchUrl,
-        HttpMethod.GET,
-        new HttpEntity<>(headers),
-        new ParameterizedTypeReference<PostResponseDto>() {
-        }
-    );
 
-    String url = "http://localhost:" + port + "/api/posts/" + id + "/likes";
+    //when
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId() + "/likes";
 
     RequestEntity<Long> body = RequestEntity
         .post(new URI(url))
         .headers(headers)
         .body(null);
+
     ResponseEntity<ChangeLikePostStatusResponseDto> res = testRestTemplate.exchange(
         body,
         ChangeLikePostStatusResponseDto.class
     );
 
-    System.out.println("_____________________________");
-    System.out.println(res.getStatusCode());
+    //then
     assertThat(res
                    .getBody()
                    .getLikeCount()).isEqualTo(1);
     assertThat(res
                    .getBody()
                    .getLikePostStatus()).isEqualTo(LikePostStatus.ACTIVE);
+  }
+
+  @Test
+  @DisplayName("changeLikeStatus메서드는 조회한적 없는 글이라면 404를 반환한다")
+  void changeLikeStatusWithNeverSeenPost() throws URISyntaxException {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    Post newPost = Post.createPost(newUser, "title", "content");
+    postRepository.save(newPost);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+
+    //when
+    String url = "http://localhost:" + port + "/api/posts/" + newPost.getId() + "/likes";
+
+    RequestEntity<Long> body = RequestEntity
+        .post(new URI(url))
+        .headers(headers)
+        .body(null);
+
+    ResponseEntity<ChangeLikePostStatusResponseDto> res = testRestTemplate.exchange(
+        body,
+        ChangeLikePostStatusResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
   }
 
   @Test
@@ -481,19 +644,19 @@ public class PostControllerTest {
         url,
         HttpMethod.GET,
         null,
-        new ParameterizedTypeReference<List<PostResponseDto>>() {
+        new ParameterizedTypeReference<>() {
         }
     );
 
     //then
     assertThat(res
                    .getBody()
-                   .size()).isEqualTo(3);
+                   .size()).isEqualTo(1);
   }
 
   @Test
-  @DisplayName("recommendedPosts메서드는 추천 포스트 목록을 생성한다")
-  void 추천포스트_조회() {
+  @DisplayName("recommendPosts메서드는 추천 포스트 목록을 생성한다")
+  void recommendPosts() {
     //given
     String url = "http://localhost:" + port + "/api/posts/2/recommends?tags=java,c,python";
     //LogIn
@@ -505,56 +668,21 @@ public class PostControllerTest {
         url,
         HttpMethod.GET,
         new HttpEntity<>(headers),
-        new ParameterizedTypeReference<List<PostRecommendResponseDto>>() {
+        new ParameterizedTypeReference<>() {
         }
     );
 
     //then
     assertThat(res
                    .getBody()
-                   .size()).isEqualTo(4);
-
-    res
-        .getBody()
-        .stream()
-        .forEach(r -> {
-          System.out.println("r.getTitle() = " + r.getTitle());
-        });
-  }
-
-  @Test
-  @DisplayName("recommendedPosts메서드는 추천 포스트 목록을 생성한다")
-  void recommendedPostsWithNonUser() {
-    //given
-    String url = "http://localhost:" + port + "/api/posts/2/recommends?tags=java,c,python";
-
-    //when
-    ResponseEntity<List<PostRecommendResponseDto>> res = testRestTemplate.exchange(
-        url,
-        HttpMethod.GET,
-        null,
-        new ParameterizedTypeReference<List<PostRecommendResponseDto>>() {
-        }
-    );
-
-    //then
-    assertThat(res
-                   .getBody()
-                   .size()).isEqualTo(4);
-
-    res
-        .getBody()
-        .stream()
-        .forEach(r -> {
-          System.out.println("r.getTitle() = " + r.getTitle());
-        });
+                   .size()).isEqualTo(1);
   }
 
   @Test
   @DisplayName("changePostStatus메서드는 모집 상태를 변경한다")
   void changePostStatus() {
     //given
-    String url = "http://localhost:" + port + "/api/posts/" + post.getId()  + "/status";
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId() + "/status";
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
@@ -564,14 +692,70 @@ public class PostControllerTest {
         url,
         HttpMethod.POST,
         new HttpEntity<>(headers),
-        new ParameterizedTypeReference<ChangePostStatusResponseDto>() {
+        new ParameterizedTypeReference<>() {
         }
     );
 
     //then
     assertThat(res
                    .getBody()
-                       .getStatus()).isEqualTo(PostStatus.COMPLETE);
+                   .getStatus()).isEqualTo(PostStatus.COMPLETE);
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 존재하지 않는 글이라면 404를 반환한다")
+  void changePostStatusWithNonexistentPost() {
+    //given
+    long postId = -1;
+    String url = "http://localhost:" + port + "/api/posts/" + postId + "/status";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+
+    //when
+    ResponseEntity<ChangePostStatusResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.POST,
+        new HttpEntity<>(headers),
+        new ParameterizedTypeReference<>() {
+        }
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("changePostStatus메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void changePostStatusWithNonexistentUser() {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    userRepository.delete(newUser);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization",  accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" + post.getId() + "/status";
+
+    //when
+    ResponseEntity<ChangePostStatusResponseDto> res = testRestTemplate.exchange(
+        url,
+        HttpMethod.POST,
+        new HttpEntity<>(headers),
+        new ParameterizedTypeReference<>() {
+        }
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(NOT_FOUND);
   }
 
   @Test
@@ -583,7 +767,6 @@ public class PostControllerTest {
 
     Post post = Post.createPost(newUser, "title", "content");
     postRepository.save(post);
-
 
     String url = "http://localhost:" + port + "/api/posts/+ " + post.getId() + "/status";
     HttpHeaders headers = new HttpHeaders();

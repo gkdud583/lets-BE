@@ -169,18 +169,18 @@ public class PostService {
 
   @Transactional
   public void deletePost(
-      Long userId,
-      Long postId
+      long userId,
+      long postId
   ) {
-    Post post = postRepository
-        .findById(postId)
-        .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
-    LikePost likePost = likePostRepository
-        .findByUserIdAndPostId(userId, postId)
-        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_USER));
+    User user = userService.findById(userId);
+    Post post = findById(postId);
+
+    if (!user.isWriterOf(post)) {
+      throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+    }
 
     postTechStackRepository.deleteAllByPost(Arrays.asList(post));
-    likePostRepository.delete(likePost);
+    likePostRepository.deleteAllByPost(Collections.singletonList(post));
     commentRepository.deleteAllByPost(post);
     postRepository.delete(post);
   }
@@ -210,34 +210,30 @@ public class PostService {
         .findComments(new CommentSearchRequestDto(post))
         .stream()
         .map(comment -> CommentResponseDto.from(
-            comment,
             cloudinaryUtil.findFileURL(comment
                                            .getUser()
-                                           .getPublicId())
+                                           .getPublicId()),
+            comment.getId(),
+            comment.getUser().getNickname(),
+            comment.getContent(),
+            comment.getCreatedDate()
         ))
         .collect(Collectors.toList());
 
-    PostResponseDto postResponse = PostResponseDto.from(
-        profile,
-        post.getId(),
-        post.getTitle(),
-        post.getContent(),
-        post.getLikeCount(),
-        post.getViewCount(),
-        post.getStatus(),
-        tags,
-        comments.size()
-    );
-
     if (userId == null) {
       return PostCommentResponseDto.from(
-          postResponse,
+          profile,
+          post.getId(),
+          post.getLikeCount(),
+          post.getViewCount(),
+          tags,
+          post.getStatus(),
+          post.getTitle(),
+          post.getContent(),
           LikePostStatus.INACTIVE,
           post.getCreatedDate(),
           comments,
-          post
-              .getUser()
-              .getNickname()
+          post.getUser().getNickname()
       );
     }
 
@@ -251,20 +247,25 @@ public class PostService {
         });
 
     return PostCommentResponseDto.from(
-        postResponse,
+        profile,
+        post.getId(),
+        post.getLikeCount(),
+        post.getViewCount(),
+        tags,
+        post.getStatus(),
+        post.getTitle(),
+        post.getContent(),
         likePost.getStatus(),
         post.getCreatedDate(),
         comments,
-        post
-            .getUser()
-            .getNickname()
+        post.getUser().getNickname()
     );
   }
 
   @Transactional
   public ChangeLikePostStatusResponseDto changeLikeStatus(
-      Long userId,
-      Long postId
+      long userId,
+      long postId
   ) {
     LikePost likePost = likePostRepository
         .findByUserIdAndPostId(userId, postId)
@@ -272,20 +273,20 @@ public class PostService {
 
     likePost.changeLikeStatus();
 
-    return new ChangeLikePostStatusResponseDto(likePost
+    return ChangeLikePostStatusResponseDto.of(likePost
                                                    .getPost()
                                                    .getLikeCount(), likePost.getStatus());
   }
 
-  public List<PostRecommendResponseDto> recommendedPosts(
+  public List<PostRecommendResponseDto> recommendPosts(
       Long userId,
-      Long id,
+      long postId,
       PostRecommendRequestDto postRecommendRequestDto
   ) {
     List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendedPosts(
         postRecommendRequestDto,
         userId,
-        id
+        postId
     );
 
     LinkedHashSet<Post> posts = recommendedPosts
@@ -298,7 +299,7 @@ public class PostService {
 
     if (posts.size() < 4) {
       List<PostTechStack> recommendedPost2 = postTechStackRepository.findRecommendedPosts(new PostRecommendRequestDto(
-          new ArrayList<>()), userId, id);
+          new ArrayList<>()), userId, postId);
       LinkedHashSet<Post> collect = recommendedPost2
           .stream()
           .map(PostTechStack::getPost)
@@ -313,7 +314,7 @@ public class PostService {
     List<PostRecommendResponseDto> list = new ArrayList<>();
 
     for (Post post : posts) {
-      list.add(PostRecommendResponseDto.PostRecommendToDto(post));
+      list.add(PostRecommendResponseDto.PostRecommendToDto(post.getId(), post.getTitle()));
       if (list.size() >= 4) {
         break;
       }
