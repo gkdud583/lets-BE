@@ -107,16 +107,17 @@ public class PostService {
           .map(postTechStack -> postTechStack.getTag())
           .collect(Collectors.toList());
       Long commentCount = commentRepository.countByPost(post);
-      postDtos.add(PostResponseDto.PostToDto(post, tags, null, commentCount));
+      postDtos.add(PostResponseDto.from(post, tags, null, commentCount));
     }
     return postDtos;
   }
 
   @Transactional
   public PostResponseDto savePost(
-      User user,
+      long userId,
       PostSaveRequestDto postSaveRequestDto
   ) {
+    User user = userService.findById(userId);
     Post post = Post.createPost(
         user,
         postSaveRequestDto.getTitle(),
@@ -131,25 +132,22 @@ public class PostService {
       postTechStackList.add(postTechStack);
     }
 
-    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
     postTechStackRepository.saveAll(postTechStackList);
+    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
 
-    return PostResponseDto.PostToDto(post, tags, profile, 0L);
+    return PostResponseDto.from(post, tags, profile, 0L);
   }
 
   @Transactional
   public PostResponseDto updatePost(
-      User user,
-      Long postId,
+      long userId,
+      long postId,
       PostUpdateRequestDto postUpdateRequestDto
   ) {
-    Post post = postRepository
-        .findOneById(postId)
-        .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+    User user = userService.findById(userId);
+    Post post = findById(postId);
 
-    if (post
-        .getUser()
-        .getId() != user.getId()) {
+    if (!user.isWriterOf(post)) {
       throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
     }
 
@@ -166,7 +164,7 @@ public class PostService {
     String profile = cloudinaryUtil.findFileURL(user.getPublicId());
     postTechStackRepository.saveAll(postTechStackList);
 
-    return PostResponseDto.PostToDto(post, tags, profile, 0L);
+    return PostResponseDto.from(post, tags, profile, 0L);
   }
 
   @Transactional

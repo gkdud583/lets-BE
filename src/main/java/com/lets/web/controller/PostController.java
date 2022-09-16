@@ -58,20 +58,17 @@ public class PostController {
       @AuthenticationPrincipal UserPrincipal principal,
       @RequestBody PostSaveRequestDto postSaveRequestDto
   ) {
-    User findUser = userService.findById(principal.getId());
-    return postService.savePost(findUser, postSaveRequestDto);
+    return postService.savePost(principal.getId(), postSaveRequestDto);
   }
 
   @PutMapping("/{postId}")
   @PreAuthorize("hasRole('ROLE_USER')")
   public PostResponseDto updatePost(
       @AuthenticationPrincipal UserPrincipal principal,
-      @PathVariable("postId") Long postId,
+      @PathVariable("postId") long postId,
       @RequestBody PostUpdateRequestDto postUpdateRequestDto
   ) {
-    Long userId = principal.getId();
-    User user = userService.findById(userId);
-    return postService.updatePost(user, postId, postUpdateRequestDto);
+    return postService.updatePost(principal.getId(), postId, postUpdateRequestDto);
   }
 
   @GetMapping("/{postId}")
