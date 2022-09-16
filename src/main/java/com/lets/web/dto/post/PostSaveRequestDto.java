@@ -4,18 +4,16 @@ import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostSaveRequestDto {
   @NotBlank
-  private String title;
+  private final String title;
   @NotBlank
-  private String content;
-  private List<String> tags;
+  private final String content;
+  private final List<String> tags;
 
 }

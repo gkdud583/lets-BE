@@ -2,38 +2,33 @@ package com.lets.web.dto.comment;
 
 import java.time.LocalDateTime;
 
-import com.lets.domain.comment.Comment;
-
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class CommentResponseDto {
-  private String profile;
-  private Long id;
-  private String nickname;
-  private String content;
-  private LocalDateTime createdTime;
-
-  private CommentResponseDto(
-      Comment comment,
-      String profile
-  ) {
-    this.profile = profile;
-    this.id = comment.getId();
-    this.nickname = comment
-        .getUser()
-        .getNickname();
-    this.content = comment.getContent();
-    this.createdTime = comment.getCreatedDate();
-  }
+  private final String profile;
+  private final Long id;
+  private final String nickname;
+  private final String content;
+  private final LocalDateTime createdTime;
 
   public static CommentResponseDto from(
-      Comment comment,
-      String profile
+      String profile,
+      long id,
+      String nickname,
+      String content,
+      LocalDateTime createdTime
   ) {
-    return new CommentResponseDto(comment, profile);
+    return CommentResponseDto
+        .builder()
+        .profile(profile)
+        .id(id)
+        .nickname(nickname)
+        .content(content)
+        .createdTime(createdTime)
+        .build();
   }
 }

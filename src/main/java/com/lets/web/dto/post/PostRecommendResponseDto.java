@@ -1,25 +1,20 @@
 package com.lets.web.dto.post;
 
-import com.lets.domain.post.Post;
-
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Getter
-@NoArgsConstructor
-@ToString
+@Builder(access = AccessLevel.PRIVATE)
 public class PostRecommendResponseDto {
-  private Long id;
+  private final long id;
 
-  private String title;
+  private final String title;
 
-  public PostRecommendResponseDto(Post post) {
-    this.id = post.getId();
-    this.title = post.getTitle();
-  }
-
-  public static PostRecommendResponseDto PostRecommendToDto(Post post) {
-    return new PostRecommendResponseDto(post);
+  public static PostRecommendResponseDto PostRecommendToDto(long id, String title) {
+    return PostRecommendResponseDto.builder()
+        .id(id)
+        .title(title)
+        .build();
   }
 }

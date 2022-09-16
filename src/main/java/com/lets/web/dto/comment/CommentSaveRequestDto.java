@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class CommentSaveRequestDto {
-  private String content;
+  private final String content;
 
   @JsonCreator
   public CommentSaveRequestDto(String content) {

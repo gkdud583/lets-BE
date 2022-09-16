@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 public class ChangePostStatusResponseDto {
-  private PostStatus status;
+  private final PostStatus status;
 
   @JsonCreator
   private ChangePostStatusResponseDto(PostStatus status) {

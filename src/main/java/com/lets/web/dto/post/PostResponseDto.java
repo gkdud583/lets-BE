@@ -15,23 +15,23 @@ import lombok.Getter;
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 public class PostResponseDto {
-  private String profile;
+  private final String profile;
 
-  private Long id;
+  private final long id;
 
-  private Long likeCount;
+  private final long likeCount;
 
-  private Long viewCount;
+  private final long viewCount;
 
-  private List<String> tags;
+  private final List<String> tags;
 
-  private PostStatus status;
+  private final PostStatus status;
 
-  private String title;
+  private final String title;
 
-  private String content;
+  private final String content;
 
-  private Long commentCount;
+  private final long commentCount;
 
   public static PostResponseDto from(
       String profile,

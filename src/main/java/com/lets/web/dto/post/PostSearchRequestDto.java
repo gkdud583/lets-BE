@@ -2,14 +2,12 @@ package com.lets.web.dto.post;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostSearchRequestDto {
-  private String status;
-  private List<String> tags;
+  private final String status;
+  private final List<String> tags;
 }

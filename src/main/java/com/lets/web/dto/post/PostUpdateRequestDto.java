@@ -5,23 +5,13 @@ import java.util.List;
 import com.lets.domain.post.PostStatus;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public class PostUpdateRequestDto {
-  private String title;
-  private String content;
-  private List<String> tags;
-  private PostStatus status;
-
-  public PostUpdateRequestDto(
-      String title,
-      String content,
-      List<String> tags,
-      PostStatus status
-  ) {
-    this.title = title;
-    this.content = content;
-    this.tags = tags;
-    this.status = status;
-  }
+  private final String title;
+  private final String content;
+  private final List<String> tags;
+  private final PostStatus status;
 }

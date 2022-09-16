@@ -14,23 +14,23 @@ import lombok.Getter;
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 public class PostCommentResponseDto {
-  private String profile;
+  private final String profile;
 
-  private Long id;
+  private final long id;
 
-  private Long likeCount;
+  private final long likeCount;
 
-  private Long viewCount;
+  private final long viewCount;
 
-  private List<String> tags;
+  private final List<String> tags;
 
-  private PostStatus status;
+  private final PostStatus status;
 
-  private String title;
+  private final String title;
 
-  private String content;
+  private final String content;
 
-  private LikePostStatus likePostStatus;
+  private final LikePostStatus likePostStatus;
 
   private LocalDateTime createdDate;
 
@@ -39,7 +39,14 @@ public class PostCommentResponseDto {
   private String nickname;
 
   public static PostCommentResponseDto from(
-      PostResponseDto postResponseDto,
+      String profile,
+      long id,
+      long likeCount,
+      long viewCount,
+      List<String> tags,
+      PostStatus status,
+      String title,
+      String content,
       LikePostStatus likePostStatus,
       LocalDateTime createdDate,
       List<CommentResponseDto> comments,
@@ -47,14 +54,14 @@ public class PostCommentResponseDto {
   ) {
     return PostCommentResponseDto
         .builder()
-        .profile(postResponseDto.getProfile())
-        .id(postResponseDto.getId())
-        .viewCount(postResponseDto.getViewCount())
-        .likeCount(postResponseDto.getLikeCount())
-        .tags(postResponseDto.getTags())
-        .status(postResponseDto.getStatus())
-        .title(postResponseDto.getTitle())
-        .content(postResponseDto.getContent())
+        .profile(profile)
+        .id(id)
+        .viewCount(viewCount)
+        .likeCount(likeCount)
+        .tags(tags)
+        .status(status)
+        .title(title)
+        .content(content)
         .likePostStatus(likePostStatus)
         .createdDate(createdDate)
         .comments(comments)

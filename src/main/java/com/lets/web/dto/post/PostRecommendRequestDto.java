@@ -2,13 +2,11 @@ package com.lets.web.dto.post;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostRecommendRequestDto {
-  private List<String> tags;
+  private final List<String> tags;
 }
