@@ -2,16 +2,11 @@ package com.lets.web.dto.post;
 
 import java.util.List;
 
-import com.lets.domain.post.Post;
 import com.lets.domain.post.PostStatus;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
 public class PostUpdateRequestDto {
   private String title;
   private String content;
@@ -28,9 +23,5 @@ public class PostUpdateRequestDto {
     this.content = content;
     this.tags = tags;
     this.status = status;
-  }
-
-  public void changePost(Post post) {
-    post.change(this.title, this.content);
   }
 }

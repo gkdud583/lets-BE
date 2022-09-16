@@ -10,7 +10,6 @@ import com.lets.domain.tag.Tag;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
  * 글 검색 응답에 사용하는 DTO
@@ -18,7 +17,6 @@ import lombok.ToString;
  */
 @Getter
 @NoArgsConstructor
-@ToString
 public class PostResponseDto {
   private String profile;
 
@@ -58,14 +56,12 @@ public class PostResponseDto {
     this.commentCount = commentCount;
   }
 
-  public static PostResponseDto PostToDto(
+  public static PostResponseDto from(
       Post post,
       List<Tag> tags,
       String profile,
       Long commentCount
   ) {
     return new PostResponseDto(post, tags, profile, commentCount);
-
   }
-
 }
