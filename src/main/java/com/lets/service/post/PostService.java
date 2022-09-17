@@ -54,7 +54,7 @@ public class PostService {
   private final CloudinaryUtil cloudinaryUtil;
   private final CommentRepository commentRepository;
 
-  public Post findById(long id) {
+  public Post findOneById(long id) {
     return postRepository
         .findById(id)
         .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
@@ -75,7 +75,7 @@ public class PostService {
     return findPostsTags(postTechStacks);
   }
 
-  public List<PostResponseDto> findPosts(long userId) {
+  public List<PostResponseDto> findUserPosts(long userId) {
     User user = userService.findById(userId);
 
     //postTechStack 한번에 구해와서 애플리케이션에서 각 post 의 태그 정보 조립
@@ -89,7 +89,6 @@ public class PostService {
     return findPostsTags(postTechStacks);
   }
 
-
   @Transactional
   public PostResponseDto savePost(
       long userId,
@@ -101,7 +100,7 @@ public class PostService {
         postSaveRequestDto.getTitle(),
         postSaveRequestDto.getContent()
     );
-    postRepository.save(post);
+    post = postRepository.save(post);
 
     List<Tag> tags = tagRepository.findAllByNameIn(postSaveRequestDto.getTags());
 
@@ -133,7 +132,7 @@ public class PostService {
       PostUpdateRequestDto postUpdateRequestDto
   ) {
     User user = userService.findById(userId);
-    Post post = findById(postId);
+    Post post = findOneById(postId);
 
     if (!user.isWriterOf(post)) {
       throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
@@ -154,6 +153,8 @@ public class PostService {
         .map(tag -> tag.getName())
         .collect(Collectors.toList());
 
+    long commentCount = commentRepository.countByPost(post);
+
     return PostResponseDto.from(
         profile,
         post.getId(),
@@ -163,7 +164,7 @@ public class PostService {
         post.getViewCount(),
         post.getStatus(),
         tagsNames,
-        0l
+        commentCount
     );
   }
 
@@ -173,7 +174,7 @@ public class PostService {
       long postId
   ) {
     User user = userService.findById(userId);
-    Post post = findById(postId);
+    Post post = findOneById(postId);
 
     if (!user.isWriterOf(post)) {
       throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
@@ -186,11 +187,11 @@ public class PostService {
   }
 
   @Transactional
-  public PostCommentResponseDto findPost(
+  public PostCommentResponseDto findById(
       Long userId,
       long postId
   ) {
-    Post post = findById(postId);
+    Post post = findOneById(postId);
 
     String profile = cloudinaryUtil.findFileURL(post
                                                     .getUser()
@@ -214,7 +215,9 @@ public class PostService {
                                            .getUser()
                                            .getPublicId()),
             comment.getId(),
-            comment.getUser().getNickname(),
+            comment
+                .getUser()
+                .getNickname(),
             comment.getContent(),
             comment.getCreatedDate()
         ))
@@ -233,7 +236,9 @@ public class PostService {
           LikePostStatus.INACTIVE,
           post.getCreatedDate(),
           comments,
-          post.getUser().getNickname()
+          post
+              .getUser()
+              .getNickname()
       );
     }
 
@@ -242,7 +247,6 @@ public class PostService {
         .findByUserIdAndPostId(userId, postId)
         .orElseGet(() -> {
           LikePost likePostCreate = LikePost.createLikePost(user, post);
-          post.addView();
           return likePostRepository.save(likePostCreate);
         });
 
@@ -258,7 +262,9 @@ public class PostService {
         likePost.getStatus(),
         post.getCreatedDate(),
         comments,
-        post.getUser().getNickname()
+        post
+            .getUser()
+            .getNickname()
     );
   }
 
@@ -274,8 +280,8 @@ public class PostService {
     likePost.changeLikeStatus();
 
     return ChangeLikePostStatusResponseDto.of(likePost
-                                                   .getPost()
-                                                   .getLikeCount(), likePost.getStatus());
+                                                  .getPost()
+                                                  .getLikeCount(), likePost.getStatus());
   }
 
   public List<PostRecommendResponseDto> recommendPosts(
@@ -283,7 +289,7 @@ public class PostService {
       long postId,
       PostRecommendRequestDto postRecommendRequestDto
   ) {
-    List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendedPosts(
+    List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendPosts(
         postRecommendRequestDto,
         userId,
         postId
@@ -298,7 +304,7 @@ public class PostService {
         .collect(Collectors.toCollection(LinkedHashSet::new));
 
     if (posts.size() < 4) {
-      List<PostTechStack> recommendedPost2 = postTechStackRepository.findRecommendedPosts(new PostRecommendRequestDto(
+      List<PostTechStack> recommendedPost2 = postTechStackRepository.findRecommendPosts(new PostRecommendRequestDto(
           new ArrayList<>()), userId, postId);
       LinkedHashSet<Post> collect = recommendedPost2
           .stream()
@@ -329,7 +335,7 @@ public class PostService {
       long postId
   ) {
     User user = userService.findById(userId);
-    Post post = findById(postId);
+    Post post = findOneById(postId);
 
     if (!user.isWriterOf(post)) {
       throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
@@ -387,6 +393,9 @@ public class PostService {
       List<Tag> tags,
       Post post
   ) {
-    return tags.stream().map(tag -> PostTechStack.createPostTechStack(tag, post)).collect(Collectors.toList());
+    return tags
+        .stream()
+        .map(tag -> PostTechStack.createPostTechStack(tag, post))
+        .collect(Collectors.toList());
   }
 }

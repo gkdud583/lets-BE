@@ -116,17 +116,4 @@ public class Post extends BaseTimeEntity {
     this.status = PostStatus.COMPLETE;
     return this.status;
   }
-  @Override
-  public String toString() {
-    return "Post{" +
-        "id=" + id +
-        ", likeCount=" + likeCount +
-        ", viewCount=" + viewCount +
-        ", user=" + user +
-        ", comments=" + comments +
-        ", status=" + status +
-        ", title='" + title + '\'' +
-        ", content='" + content + '\'' +
-        '}';
-  }
 }

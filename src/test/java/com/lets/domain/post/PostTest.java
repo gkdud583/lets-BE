@@ -12,7 +12,7 @@ import com.lets.security.AuthProvider;
 public class PostTest {
   @Test
   @DisplayName("createPost메서드는 게시글을 생성한다")
-  public void createPost() {
+  void createPost() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
 
@@ -25,7 +25,7 @@ public class PostTest {
 
   @Test
   @DisplayName("addComment메서드는 글에 댓글을 추가한다")
-  public void addComment() {
+  void addComment() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
     Post post = Post.createPost(user, "title1", "content1");
@@ -42,7 +42,7 @@ public class PostTest {
 
   @Test
   @DisplayName("addLike메서드는 글에 좋아요를 추가한다")
-  public void addLike() {
+  void addLike() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
     Post post = Post.createPost(user, "title1", "content1");
@@ -56,7 +56,7 @@ public class PostTest {
 
   @Test
   @DisplayName("minusLike메서드는 글에 좋아요를 뺀다")
-  public void minusLike() {
+  void minusLike() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
     Post post = Post.createPost(user, "title1", "content1");
@@ -71,7 +71,7 @@ public class PostTest {
 
   @Test
   @DisplayName("addView메서드는 글에 조회수를 더한다")
-  public void addView() {
+  void addView() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
     Post post = Post.createPost(user, "title1", "content1");
@@ -85,7 +85,7 @@ public class PostTest {
 
   @Test
   @DisplayName("change메서드는 글의 제목과 내용을 변경한다")
-  public void change() {
+  void change() {
     //given
     User user = User.createUser("user1", "123", AuthProvider.google, "default");
     Post post = Post.createPost(user, "title1", "content1");
@@ -95,5 +95,19 @@ public class PostTest {
 
     //then
     assertThat(post.getContent()).isEqualTo("content2");
+  }
+
+  @Test
+  @DisplayName("changeStatus메서드는 글의 상태를 변경한다")
+  void changeStatus() {
+    //given
+    User user = User.createUser("user1", "123", AuthProvider.google, "default");
+    Post post = Post.createPost(user, "title1", "content1");
+
+    //when
+    post.changeStatus();
+
+    //then
+    assertThat(post.getStatus()).isEqualTo(PostStatus.COMPLETE);
   }
 }

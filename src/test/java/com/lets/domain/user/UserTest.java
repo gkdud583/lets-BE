@@ -36,7 +36,7 @@ public class UserTest {
   }
 
   @Test
-  @DisplayName("changeNickname메서드는 유저의 publicId를 변경한다")
+  @DisplayName("changeNickname메서드는 유저의 닉네임을 변경한다")
   void changeNickname() {
     //given
     String nickname = "newName";

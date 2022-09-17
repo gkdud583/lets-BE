@@ -13,7 +13,7 @@ public interface PostTechStackCustomRepository {
       Pageable pageable
   );
 
-  List<PostTechStack> findRecommendedPosts(
+  List<PostTechStack> findRecommendPosts(
       PostRecommendRequestDto search,
       Long userId,
       Long id

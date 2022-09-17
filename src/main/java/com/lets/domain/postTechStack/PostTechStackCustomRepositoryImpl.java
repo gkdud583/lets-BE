@@ -50,7 +50,7 @@ public class PostTechStackCustomRepositoryImpl implements PostTechStackCustomRep
   }
 
   @Override
-  public List<PostTechStack> findRecommendedPosts(
+  public List<PostTechStack> findRecommendPosts(
       PostRecommendRequestDto search,
       Long userId,
       Long postId

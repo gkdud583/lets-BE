@@ -137,7 +137,7 @@ public class PostTechStackRepositoryTest {
         Arrays.asList(tag.getName()));
 
     //when
-    List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendedPosts(
+    List<PostTechStack> recommendedPosts = postTechStackRepository.findRecommendPosts(
         postRecommendRequestDto, user.getId(), post.getId());
 
     //then

@@ -7,12 +7,14 @@ import static org.mockito.BDDMockito.*;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.lets.domain.likePost.LikePost;
 import com.lets.domain.likePost.LikePostRepository;
@@ -41,18 +43,24 @@ public class LikePostServiceTest {
   @Mock
   LikePostRepository likePostRepository;
 
-  User user = User.createUser("user1", "123", AuthProvider.google, null);
-  Post post = Post.createPost(user, "title1", "content1");
-  Tag tag = Tag.createTag("spring");
-  PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
-  List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
-  List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
+  static long userId = 1l;
 
+  static long postId = 1l;
+  static User user = User.createUser("user1", "123", AuthProvider.google, null);
+  static Post post = Post.createPost(user, "title1", "content1");
+  static Tag tag = Tag.createTag("spring");
+  static PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
+  static List<PostTechStack> postTechStacks = Arrays.asList(postTechStack);
+  static List<LikePost> likePosts = Arrays.asList(LikePost.createLikePost(user, post));
+
+  @BeforeAll
+  static void setup() {
+    ReflectionTestUtils.setField(post, "id", postId);
+  }
   @Test
   @DisplayName("findLikePosts메서드는 유저가 조회 한 글을 조회한다")
   void findLikePosts() {
     //given
-    long userId = 1l;
     given(userService.findById(anyLong()))
         .willReturn(user);
     given(likePostRepository.findAllByUser(any()))

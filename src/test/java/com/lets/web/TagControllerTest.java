@@ -2,7 +2,6 @@ package com.lets.web;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,9 +20,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.lets.domain.tag.Tag;
 import com.lets.domain.tag.TagRepository;
-import com.lets.security.AuthProvider;
 import com.lets.service.tag.TagService;
-import com.lets.web.dto.auth.SignupRequestDto;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -40,18 +37,10 @@ public class TagControllerTest {
   @Autowired
   private TestRestTemplate testRestTemplate;
 
-  private SignupRequestDto signupRequest;
   private Tag tag;
 
   @BeforeEach
   void before() {
-    signupRequest = new SignupRequestDto(
-        null,
-        "user1",
-        "1234",
-        AuthProvider.google,
-        new ArrayList<>()
-    );
     tag = tagRepository.save(Tag.createTag("spring"));
   }
 
@@ -66,7 +55,7 @@ public class TagControllerTest {
         url,
         HttpMethod.GET,
         null,
-        new ParameterizedTypeReference<List<String>>() {
+        new ParameterizedTypeReference<>() {
         }
     );
 

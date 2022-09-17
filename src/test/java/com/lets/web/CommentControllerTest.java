@@ -105,9 +105,10 @@ class CommentControllerTest {
   @SpyBean
   private JwtTokenProvider jwtTokenProvider;
 
-  private Long userId;
 
   private User user;
+
+  private Post post;
   private UserPrincipal principal;
   private Authentication authentication;
   private String accessToken = "Bearer ";
@@ -116,7 +117,7 @@ class CommentControllerTest {
 
   @BeforeEach
   void before() {
-    User user = User.createUser("user2", "123", AuthProvider.google, null);
+    user = User.createUser("user2", "123", AuthProvider.google, null);
     userRepository.save(user);
 
     Tag tag1 = Tag.createTag("spring");
@@ -125,16 +126,16 @@ class CommentControllerTest {
     tagRepository.save(tag1);
     tagRepository.save(tag2);
 
-    Post post1 = Post.createPost(user, "title1", "content1");
+    post = Post.createPost(user, "title1", "content1");
     Post post2 = Post.createPost(user, "title2", "content2");
 
-    postRepository.save(post1);
+    postRepository.save(post);
     postRepository.save(post2);
 
-    Comment comment = Comment.createComment(user, post1, "content333");
+    Comment comment = Comment.createComment(user, post, "content333");
     commentRepository.save(comment);
 
-    PostTechStack postTechStack1 = PostTechStack.createPostTechStack(tag1, post1);
+    PostTechStack postTechStack1 = PostTechStack.createPostTechStack(tag1, post);
     PostTechStack postTechStack2 = PostTechStack.createPostTechStack(tag2, post2);
 
     postTechStackService.save(postTechStack1);
@@ -189,14 +190,70 @@ class CommentControllerTest {
   }
 
   @Test
+  @DisplayName("save메서드는 존재하지 않는 유저라면 404를 반환한다")
+  void saveWithNonexistentUser() throws URISyntaxException {
+    //given
+    User newUser = User.createUser("newUser", "123443", AuthProvider.google, "default");
+    userRepository.save(newUser);
+
+    principal = UserPrincipal.create(newUser);
+
+    authentication = new JwtAuthentication(principal);
+    accessToken = "Bearer " + jwtTokenProvider.generateAccessToken(authentication);
+
+    userRepository.delete(newUser);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" +  post.getId() + "/comments";
+
+    RequestEntity<CommentSaveRequestDto> body = RequestEntity
+        .post(new URI(url))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(headers)
+        .body(new CommentSaveRequestDto("content333"));
+
+    //when
+    ResponseEntity<CommentResponseDto> res = testRestTemplate.exchange(
+        body,
+        CommentResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("save메서드는 존재하지 않는 게시글이라면 404를 반환한다")
+  void saveWithNonexistentPost() throws URISyntaxException {
+    //given
+    long postId = -1;
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String url = "http://localhost:" + port + "/api/posts/" +  postId + "/comments";
+
+    RequestEntity<CommentSaveRequestDto> body = RequestEntity
+        .post(new URI(url))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(headers)
+        .body(new CommentSaveRequestDto("content333"));
+
+    //when
+    ResponseEntity<CommentResponseDto> res = testRestTemplate.exchange(
+        body,
+        CommentResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
   @DisplayName("update메서드는 댓글 내용을 수정한다")
   void update() throws URISyntaxException {
-    Long postId = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-
-    //LogIn
+    //given
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
 
@@ -206,31 +263,53 @@ class CommentControllerTest {
         .getId();
 
     String updateUrl =
-        "http://localhost:" + port + "/api/posts/" + postId + "/comments/" + commentId;
+        "http://localhost:" + port + "/api/posts/" + post.getId() + "/comments/" + commentId;
     RequestEntity<CommentUpdateRequestDto> updateBody = RequestEntity
         .put(new URI(updateUrl))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
         .body(new CommentUpdateRequestDto("content222"));
+    //when
     ResponseEntity<CommentResponseDto> updateRes = testRestTemplate.exchange(
         updateBody,
         CommentResponseDto.class
     );
 
+    //then
     assertThat(updateRes
                    .getBody()
                    .getContent()).isEqualTo("content222");
   }
 
   @Test
+  @DisplayName("update메서드는 존재하지 않는 댓글이라면 404를 던진다")
+  void updateWithNonexistentComment() throws URISyntaxException {
+    //given
+    long commentId = 1l;
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+
+    String updateUrl =
+        "http://localhost:" + port + "/api/posts/" + post.getId() + "/comments/" + commentId;
+    RequestEntity<CommentUpdateRequestDto> updateBody = RequestEntity
+        .put(new URI(updateUrl))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(headers)
+        .body(new CommentUpdateRequestDto("content222"));
+    //when
+    ResponseEntity<CommentResponseDto> updateRes = testRestTemplate.exchange(
+        updateBody,
+        CommentResponseDto.class
+    );
+
+    //then
+    assertThat(updateRes.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
   @DisplayName("delete메서드는 댓글을 삭제한다")
   void delete() {
-    Long postId = postRepository
-        .findAll()
-        .get(0)
-        .getId();
-
-    //LogIn
+    //given
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
     headers.add("contentType", "application/json");
@@ -239,7 +318,9 @@ class CommentControllerTest {
         .get(0)
         .getId();
     String deleteUrl =
-        "http://localhost:" + port + "/api/posts/" + postId + "/comments/" + commentId;
+        "http://localhost:" + port + "/api/posts/" + post.getId() + "/comments/" + commentId;
+
+    //when
     ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
         deleteUrl,
         HttpMethod.DELETE,
@@ -247,6 +328,31 @@ class CommentControllerTest {
         ApiResponseDto.class
     );
 
+    //then
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+  }
+
+  @Test
+  @DisplayName("delete메서드는 존재하지 않는 댓글이라면 404를 던진다")
+  void deleteWithNonexistentComment() {
+    //given
+    long commentId = -1;
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", accessToken);
+    headers.add("contentType", "application/json");
+
+    String deleteUrl =
+        "http://localhost:" + port + "/api/posts/" + post.getId() + "/comments/" + commentId;
+
+    //when
+    ResponseEntity<ApiResponseDto> res = testRestTemplate.exchange(
+        deleteUrl,
+        HttpMethod.DELETE,
+        new HttpEntity<>(headers),
+        ApiResponseDto.class
+    );
+
+    //then
+    assertThat(res.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
   }
 }

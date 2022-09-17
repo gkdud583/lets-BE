@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.lets.domain.likePost.LikePostRepository;
 import com.lets.domain.post.Post;
@@ -33,7 +32,7 @@ import com.lets.web.dto.user.SettingResponseDto;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Service
 public class UserService {
   private final UserRepository userRepository;
@@ -46,6 +45,7 @@ public class UserService {
 
   private final FileUtil fileUtil;
 
+  @Transactional
   public User signup(
       SignupRequestDto signupRequest,
       File profile
@@ -77,6 +77,7 @@ public class UserService {
     return user;
   }
 
+  @Transactional
   public void signout(User user) {
     //프로필 이미지 삭제
     deleteProfile(user.getPublicId());
@@ -136,10 +137,17 @@ public class UserService {
     User user = findById(userId);
     List<UserTechStack> userTechStacks = userTechStackRepository.findAllByUser(user);
     String profile = cloudinaryUtil.findFileURL(user.getPublicId());
-
-    return SettingResponseDto.from(profile, user.getNickname(), userTechStacks);
+    List<String> tags = userTechStacks
+        .stream()
+        .map(userTechStack -> userTechStack
+            .getTag()
+            .getName())
+        .collect(
+            Collectors.toList());
+    return SettingResponseDto.from(profile, user.getNickname(), tags);
   }
 
+  @Transactional
   public SettingResponseDto setSetting(
       long userId,
       SettingRequestDto settingRequestDto
@@ -150,7 +158,14 @@ public class UserService {
     changeNickname(user, settingRequestDto.getNickname());
 
     String profile = cloudinaryUtil.findFileURL(user.getPublicId());
-    return SettingResponseDto.from(profile, user.getNickname(), userTechStacks);
+    List<String> tags = userTechStacks
+        .stream()
+        .map(userTechStack -> userTechStack
+            .getTag()
+            .getName())
+        .collect(
+            Collectors.toList());
+    return SettingResponseDto.from(profile, user.getNickname(), tags);
   }
 
   private void changeProfile(

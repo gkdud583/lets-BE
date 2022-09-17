@@ -351,7 +351,7 @@ public class PostControllerTest {
         .put(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
-        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+        .body(new PostUpdateRequestDto(title, content, tags));
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
         body,
         PostResponseDto.class
@@ -390,7 +390,7 @@ public class PostControllerTest {
         .put(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
-        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+        .body(new PostUpdateRequestDto(title, content, tags));
 
     //when
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
@@ -421,7 +421,7 @@ public class PostControllerTest {
         .put(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
-        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+        .body(new PostUpdateRequestDto(title, content, tags));
 
     //when
     ResponseEntity<PostResponseDto> res = testRestTemplate.exchange(
@@ -456,7 +456,7 @@ public class PostControllerTest {
         .put(new URI(url))
         .accept(MediaType.APPLICATION_JSON)
         .headers(headers)
-        .body(new PostUpdateRequestDto(title, content, tags, PostStatus.RECRUITING));
+        .body(new PostUpdateRequestDto(title, content, tags));
 
     //when
     ResponseEntity<Object> res = testRestTemplate.exchange(body, Object.class);

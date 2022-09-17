@@ -1,63 +1,53 @@
 package com.lets.web.dto.likepost;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.lets.domain.likePost.LikePostStatus;
-import com.lets.domain.post.Post;
 import com.lets.domain.post.PostStatus;
-import com.lets.domain.tag.Tag;
 
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Getter
-@NoArgsConstructor
-@ToString
+@Builder(access = AccessLevel.PRIVATE)
 public class LikePostResponseDto {
-  private Long id;
+  private final long id;
 
-  private Long likeCount;
+  private final long likeCount;
 
-  private Long viewCount;
+  private final long viewCount;
 
-  private List<String> tags = new ArrayList<>();
+  private final List<String> tags;
 
-  private PostStatus status;
+  private final PostStatus status;
 
-  private LikePostStatus likePostStatus;
+  private final LikePostStatus likePostStatus;
 
-  private String title;
+  private final String title;
 
-  private String content;
+  private final String content;
 
-  public LikePostResponseDto(
-      Post post,
+
+  public static LikePostResponseDto from(
+      long id,
+      String title,
+      String content,
+      long likeCount,
+      long viewCount,
+      PostStatus status,
       LikePostStatus likePostStatus,
-      List<Tag> tags
+      List<String> tags
   ) {
-    this.id = post.getId();
-    this.title = post.getTitle();
-    this.content = post.getContent();
-    this.likeCount = post.getLikeCount();
-    this.viewCount = post.getViewCount();
-    this.status = post.getStatus();
-    this.likePostStatus = likePostStatus;
-    this.tags = tags
-        .stream()
-        .map(tag -> tag.getName())
-        .collect(Collectors.toList());
+    return LikePostResponseDto.builder()
+        .id(id)
+        .title(title)
+        .content(content)
+        .likeCount(likeCount)
+        .viewCount(viewCount)
+        .status(status)
+        .likePostStatus(likePostStatus)
+        .tags(tags)
+        .build();
   }
-
-  public static LikePostResponseDto likePostToDto(
-      Post post,
-      LikePostStatus likePostStatus,
-      List<Tag> tags
-  ) {
-    return new LikePostResponseDto(post, likePostStatus, tags);
-
-  }
-
 }

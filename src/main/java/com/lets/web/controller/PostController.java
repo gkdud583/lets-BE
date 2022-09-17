@@ -69,15 +69,15 @@ public class PostController {
   }
 
   @GetMapping("/{postId}")
-  public PostCommentResponseDto findPost(
+  public PostCommentResponseDto findById(
       @AuthenticationPrincipal UserPrincipal principal,
       @PathVariable("postId") long postId
   ) {
     if (principal == null) {
-      return postService.findPost(null, postId);
+      return postService.findById(null, postId);
     }
 
-    return postService.findPost(principal.getId(), postId);
+    return postService.findById(principal.getId(), postId);
   }
 
   @DeleteMapping("/{postId}")

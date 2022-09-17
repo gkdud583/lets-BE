@@ -33,7 +33,7 @@ public class CommentService {
       CommentSaveRequestDto commentSaveRequestDto
   ) {
     User user = userService.findById(userId);
-    Post post = postService.findById(postId);
+    Post post = postService.findOneById(postId);
     Comment comment = Comment.createComment(user, post, commentSaveRequestDto.getContent());
     Comment savedComment = commentRepository.save(comment);
 
@@ -67,7 +67,7 @@ public class CommentService {
     commentRepository.delete(comment);
   }
 
-  public Comment findById(long id) {
+  private Comment findById(long id) {
     return commentRepository
         .findByIdWithUser(id)
         .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));

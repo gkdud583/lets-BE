@@ -8,7 +8,7 @@ import static org.springframework.http.HttpStatus.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.Cookie;
@@ -33,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
+import com.lets.domain.comment.CommentRepository;
 import com.lets.domain.likePost.LikePost;
 import com.lets.domain.likePost.LikePostRepository;
 import com.lets.domain.post.Post;
@@ -56,7 +57,9 @@ import com.lets.service.user.UserService;
 import com.lets.util.CloudinaryUtil;
 import com.lets.util.CookieUtil;
 import com.lets.util.RedisUtil;
+import com.lets.web.dto.likepost.LikePostResponseDto;
 import com.lets.web.dto.post.PostResponseDto;
+import com.lets.web.dto.post.PostSaveRequestDto;
 import com.lets.web.dto.user.SettingRequestDto;
 import com.lets.web.dto.user.SettingResponseDto;
 
@@ -109,6 +112,9 @@ public class UserControllerTest {
   @Autowired
   RedisUtil redisUtil;
 
+  @Autowired
+  CommentRepository commentRepository;
+
   @SpyBean
   private JwtTokenProvider jwtTokenProvider;
 
@@ -121,11 +127,10 @@ public class UserControllerTest {
 
   @BeforeEach
   void before() {
-    user = User.createUser("user1", "1234", AuthProvider.google, "default");
-
+    user = User.createUser("nickname", "1442", AuthProvider.google, "default");
     userRepository.save(user);
 
-    principal = UserPrincipal.create(user);
+    principal = UserPrincipal.create(this.user);
 
     authentication = new JwtAuthentication(principal);
     accessToken += jwtTokenProvider.generateRefreshToken(authentication);
@@ -144,9 +149,10 @@ public class UserControllerTest {
     redisUtil.deleteData(refreshToken);
   }
 
+
   //security test
   @Test
-  @DisplayName("accessToken이 없을 경우 401 을 반환합니다")
+  @DisplayName("accessToken이 없을 경우 401 을 반환한다")
   void myPostsWithNonexistentAccessToken() {
     //given
     HttpHeaders headers = new HttpHeaders();
@@ -164,7 +170,7 @@ public class UserControllerTest {
   }
 
   @Test
-  @DisplayName("refreshToken이 없을 경우 400 을 반환합니다")
+  @DisplayName("refreshToken이 없을 경우 400 을 반환한다")
   void myPostsWithNonexistentRefreshToken() {
     //given
     HttpHeaders headers = new HttpHeaders();
@@ -185,7 +191,7 @@ public class UserControllerTest {
   }
 
   @Test
-  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환합니다")
+  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환한다")
   void myPostsWithInvalidRefreshToken1() {
     //given
     principal = UserPrincipal.create(1L, user);
@@ -215,7 +221,7 @@ public class UserControllerTest {
   }
 
   @Test
-  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환합니다")
+  @DisplayName("refresh token이 유효하지 않을 경우 401 을 반환한다")
   void myPosts_유효_하지_않은_refresh_token2() {
     //given
     principal = UserPrincipal.create(1L, user);
@@ -281,6 +287,9 @@ public class UserControllerTest {
     PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
     postTechStackService.save(postTechStack);
 
+    Long commentCount = commentRepository.countByPost(post);
+    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
+
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
     String url = "http://localhost:" + port + "/api/users/myPosts";
@@ -297,6 +306,15 @@ public class UserControllerTest {
     assertThat(res
                    .getBody()
                    .size()).isEqualTo(1);
+    assertThat(res.getBody().get(0).getContent()).isEqualTo(post.getContent());
+    assertThat(res.getBody().get(0).getLikeCount()).isEqualTo(post.getLikeCount());
+    assertThat(res.getBody().get(0).getTitle()).isEqualTo(post.getTitle());
+    assertThat(res.getBody().get(0).getTags().get(0)).isEqualTo(tag.getName());
+    assertThat(res.getBody().get(0).getViewCount()).isEqualTo(post.getViewCount());
+    assertThat(res.getBody().get(0).getStatus()).isEqualTo(post.getStatus());
+    assertThat(res.getBody().get(0).getId()).isEqualTo(post.getId());
+    assertThat(res.getBody().get(0).getCommentCount()).isEqualTo(commentCount);
+    assertThat(res.getBody().get(0).getProfile()).isEqualTo(profile);
 
   }
 
@@ -328,34 +346,53 @@ public class UserControllerTest {
   @DisplayName("findMyLikes메서드는 유저가 조회한 게시글을 반환한다")
   void myLikes() {
     //given
-    Post post = Post.createPost(user, "title1", "content1");
-    postRepository.save(post);
-
     Tag tag = Tag.createTag("spring");
     tagRepository.save(tag);
 
-    PostTechStack postTechStack = PostTechStack.createPostTechStack(tag, post);
-    postTechStackService.save(postTechStack);
+    PostResponseDto postResponseDto = postService.savePost(
+        user.getId(),
+        new PostSaveRequestDto("title",
+                               "content",
+                               List.of("spring")
+        )
+    );
 
-    LikePost likePost = LikePost.createLikePost(user, post);
-    likePostRepository.save(likePost);
+    Post post = postService.findOneById(postResponseDto.getId());
+    postService.findById(user.getId(), post.getId());
+
+    LikePost likePost = likePostRepository
+        .findByUserIdAndPostId(user.getId(), post.getId())
+        .get();
+
 
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
     String url = "http://localhost:" + port + "/api/users/myLikes";
 
     //when
-    ResponseEntity<List<PostResponseDto>> res = testRestTemplate.exchange(url, HttpMethod.GET,
+    ResponseEntity<List<LikePostResponseDto>> res = testRestTemplate.exchange(url, HttpMethod.GET,
                                                                           new HttpEntity<>(headers),
-                                                                          new ParameterizedTypeReference<List<PostResponseDto>>() {
+                                                                          new ParameterizedTypeReference<>() {
                                                                           }
     );
 
+
     //then
+    post = postRepository
+        .findById(post.getId())
+        .get();
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(res
                    .getBody()
                    .size()).isEqualTo(1);
+    assertThat(res.getBody().get(0).getStatus()).isEqualTo(post.getStatus());
+    assertThat(res.getBody().get(0).getId()).isEqualTo(post.getId());
+    assertThat(res.getBody().get(0).getLikeCount()).isEqualTo(post.getLikeCount());
+    assertThat(res.getBody().get(0).getLikePostStatus()).isEqualTo(likePost.getStatus());
+    assertThat(res.getBody().get(0).getTitle()).isEqualTo(post.getTitle());
+    assertThat(res.getBody().get(0).getContent()).isEqualTo(post.getContent());
+    assertThat(res.getBody().get(0).getViewCount()).isEqualTo(post.getViewCount());
+    assertThat(res.getBody().get(0).getTags().get(0)).isEqualTo(tag.getName());
 
   }
 
@@ -442,6 +479,9 @@ public class UserControllerTest {
   void setSetting1() {
 
     //given
+    String profile = "KEEP";
+    String nickname = "user2";
+    List<String> tags = Collections.EMPTY_LIST;
     String url = "http://localhost:" + port + "/api/users/setting";
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
@@ -450,8 +490,8 @@ public class UserControllerTest {
     ResponseEntity<SettingResponseDto> res = testRestTemplate.exchange(url, HttpMethod.PATCH,
                                                                        new HttpEntity<>(
                                                                            new SettingRequestDto(
-                                                                               "KEEP", "user2",
-                                                                               Arrays.asList()
+                                                                               profile, nickname,
+                                                                               tags
                                                                            ),
                                                                            headers
                                                                        ),
@@ -459,13 +499,11 @@ public class UserControllerTest {
     );
 
     //then
+    profile = cloudinaryUtil.findFileURL(user.getPublicId());
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService
-                   .findById(user.getId())
-                   .getNickname()).isEqualTo("user2");
-    assertThat(userService
-                   .findById(user.getId())
-                   .getPublicId()).isEqualTo("default");
+    assertThat(res.getBody().getTags()).isEmpty();
+    assertThat(res.getBody().getNickname()).isEqualTo(nickname);
+    assertThat(res.getBody().getProfile()).isEqualTo(profile);
 
   }
 
@@ -474,6 +512,10 @@ public class UserControllerTest {
   void setSetting2() {
 
     //given
+    String profile = "PUBLIC";
+    String nickname = "user2";
+    List<String> tags = Collections.EMPTY_LIST;
+
     String url = "http://localhost:" + port + "/api/users/setting";
     HttpHeaders headers = new HttpHeaders();
     headers.add("Authorization", accessToken);
@@ -482,8 +524,8 @@ public class UserControllerTest {
     ResponseEntity<SettingResponseDto> res = testRestTemplate.exchange(url, HttpMethod.PATCH,
                                                                        new HttpEntity<>(
                                                                            new SettingRequestDto(
-                                                                               "PUBLIC", "user2",
-                                                                               Arrays.asList()
+                                                                               profile, nickname,
+                                                                               tags
                                                                            ),
                                                                            headers
                                                                        ),
@@ -491,13 +533,11 @@ public class UserControllerTest {
     );
 
     //then
+    profile = cloudinaryUtil.findFileURL(user.getPublicId());
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService
-                   .findById(user.getId())
-                   .getNickname()).isEqualTo("user2");
-    assertThat(userService
-                   .findById(user.getId())
-                   .getPublicId()).isEqualTo("default");
+    assertThat(res.getBody().getTags()).isEmpty();
+    assertThat(res.getBody().getNickname()).isEqualTo(nickname);
+    assertThat(res.getBody().getProfile()).isEqualTo(profile);
 
   }
 
@@ -506,6 +546,10 @@ public class UserControllerTest {
   void setSetting3() {
 
     //given
+    String nickname = "user2";
+    List<String> tags = Collections.EMPTY_LIST;
+
+
     File file = new File("src/test/java/com/lets/tea.jpg");
 
     String encodedImage = null;
@@ -525,8 +569,8 @@ public class UserControllerTest {
                                                                        new HttpEntity<>(
                                                                            new SettingRequestDto(
                                                                                encodedImage,
-                                                                               "user2",
-                                                                               Arrays.asList()
+                                                                               nickname,
+                                                                               tags
                                                                            ),
                                                                            headers
                                                                        ),
@@ -534,13 +578,15 @@ public class UserControllerTest {
     );
 
     //then
+     user = userRepository
+        .findById(user.getId())
+        .get();
+    String profile = cloudinaryUtil.findFileURL(user.getPublicId());
+
     assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(userService
-                   .findById(user.getId())
-                   .getNickname()).isEqualTo("user2");
-    assertThat(userService
-                   .findById(user.getId())
-                   .getPublicId()).isNotEqualTo("default");
+    assertThat(res.getBody().getTags()).isEmpty();
+    assertThat(res.getBody().getNickname()).isEqualTo(nickname);
+    assertThat(res.getBody().getProfile()).isEqualTo(profile);
 
   }
 }

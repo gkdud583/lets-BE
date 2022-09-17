@@ -61,7 +61,7 @@ public class CommentServiceTest {
 
     given(userService.findById(anyLong()))
         .willReturn(user);
-    given(postService.findById(anyLong()))
+    given(postService.findOneById(anyLong()))
         .willReturn(post);
     given(commentRepository.save(any(Comment.class)))
         .willReturn(comment);
@@ -74,7 +74,6 @@ public class CommentServiceTest {
     );
 
     // then
-    verify(commentRepository).save(any(Comment.class));
     assertThat(result.getId()).isEqualTo(commentId);
     assertThat(result.getProfile()).isEqualTo(profile);
     assertThat(result.getNickname()).isEqualTo(user.getNickname());
@@ -102,7 +101,7 @@ public class CommentServiceTest {
     // given
     given(userService.findById(anyLong()))
         .willReturn(user);
-    given(postService.findById(anyLong()))
+    given(postService.findOneById(anyLong()))
         .willThrow(new CustomException(ErrorCode.POST_NOT_FOUND));
 
     // when, then
@@ -184,41 +183,6 @@ public class CommentServiceTest {
     // when, then
     assertThatThrownBy(() -> {
       commentService.delete(commentId);
-    })
-        .isInstanceOf(CustomException.class)
-        .hasMessageContaining("해당 댓글을 찾을 수 없습니다.");
-  }
-
-  @Test
-  @DisplayName("findById메서드는 아이디로 댓글을 조회한다")
-  void findById() {
-    // given
-    long commentId = 1l;
-
-    Comment comment = Comment.createComment(user, post, "content");
-
-    given(commentRepository.findByIdWithUser(anyLong()))
-        .willReturn(Optional.of(comment));
-
-    // when
-    Comment foundComment = commentService.findById(commentId);
-
-    // then
-    verify(commentRepository).findByIdWithUser(anyLong());
-    assertThat(foundComment).isEqualTo(comment);
-  }
-
-  @Test
-  @DisplayName("findById메서드는 댓글이 존재하지 않는다면 예외를 던진다")
-  void findByIdNonexistentComment() {
-    // given
-    long commentId = 1l;
-    given(commentRepository.findByIdWithUser(anyLong()))
-        .willReturn(Optional.empty());
-
-    // when, then
-    assertThatThrownBy(() -> {
-      commentService.findById(commentId);
     })
         .isInstanceOf(CustomException.class)
         .hasMessageContaining("해당 댓글을 찾을 수 없습니다.");

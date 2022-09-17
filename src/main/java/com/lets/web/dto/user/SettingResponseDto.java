@@ -1,41 +1,27 @@
 package com.lets.web.dto.user;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import com.lets.domain.userTechStack.UserTechStack;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class SettingResponseDto {
-  private String profile;
-  private String nickname;
-  private List<String> tags;
-
-  private SettingResponseDto(
-      String profile,
-      String nickname,
-      List<UserTechStack> userTechStacks
-  ) {
-    this.profile = profile;
-    this.nickname = nickname;
-    this.tags = userTechStacks
-        .stream()
-        .map(userTechStack -> userTechStack
-            .getTag()
-            .getName())
-        .collect(Collectors.toList());
-  }
+  private final String profile;
+  private final String nickname;
+  private final List<String> tags;
 
   public static SettingResponseDto from(
       String profile,
       String nickname,
-      List<UserTechStack> userTechStacks
+      List<String> tags
   ) {
-    return new SettingResponseDto(profile, nickname, userTechStacks);
+    return SettingResponseDto.builder()
+        .profile(profile)
+        .nickname(nickname)
+        .tags(tags)
+        .build();
   }
 }

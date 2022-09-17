@@ -1,7 +1,6 @@
 package com.lets.service.user;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
@@ -58,6 +57,7 @@ public class UserServiceTest {
       AuthProvider.google,
       new ArrayList<>()
   );
+  long userId = 1l;
   User user = User.createUser("nickname", "1234", AuthProvider.google, "PUBLIC");
 
   Tag tag = Tag.createTag("spring");
@@ -65,25 +65,22 @@ public class UserServiceTest {
   UserTechStack userTechStack = UserTechStack.createUserTechStack(tag, user);
 
   @Test
-  @DisplayName("validateName메서드는 이름이 중복이라면 예외를 던진다")
-  void validateNameWithDuplicateName() {
+  @DisplayName("validateNickname메서드는 이름이 중복이라면 예외를 던진다")
+  void validateNicknameWithDuplicateName() {
     //given
     given(userRepository.existsByNickname(any()))
         .willReturn(true);
-    //when
-    Exception exception = Assertions.assertThrows(
-        CustomException.class,
-        () -> userService.validateNickname(any())
-    );
-
-    //then
-    assertEquals("중복된 닉네임입니다.", exception.getMessage());
-
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.validateNickname(user.getNickname());
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("중복된 닉네임입니다.");
   }
 
   @Test
-  @DisplayName("validateName메서드는 이름이 중복인지 확인한다")
-  void validateName() {
+  @DisplayName("validateNickname메서드는 이름이 중복인지 확인한다")
+  void validateNickname() {
     //given
     given(userRepository.existsByNickname(any()))
         .willReturn(false);
@@ -97,14 +94,13 @@ public class UserServiceTest {
   @DisplayName("findBySocialLoginIdAndAuthProvider메서드는 socialLoginId & authProvider로 유저를 조회한다")
   void findBySocialLoginIdAndAuthProvider() {
     //given
-    User user = User.createUser("user1", "123", AuthProvider.google, "123");
     given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
         .willReturn(Optional.of(user));
     //when
-    User findUser = userService.findBySocialLoginIdAndAuthProvider(any(), any());
+    User foundUser = userService.findBySocialLoginIdAndAuthProvider(user.getSocialLoginId(), user.getAuthProvider());
 
     //then
-    assertThat(findUser).isNotNull();
+    assertThat(foundUser).isEqualTo(user);
   }
 
   @Test
@@ -112,20 +108,14 @@ public class UserServiceTest {
   void findBySocialLoginIdAndAuthProviderWithNonexistentUser() {
     //given
     given(userRepository.findBySocialLoginIdAndAuthProvider(any(), any()))
-        .willReturn(Optional.ofNullable(null));
-    //when
-    Exception exception = Assertions.assertThrows(
-        CustomException.class,
-        () -> userService.findBySocialLoginIdAndAuthProvider(
-            any(),
-            any()
-        )
-    );
+        .willReturn(Optional.empty());
 
-    //then
-    assertThat(exception.getMessage()).isEqualTo(
-        "로그인 정보[SOCIAL_LOGIN_ID, AUTH_PROVIDER]가 올바르지 않습니다.");
-
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.findBySocialLoginIdAndAuthProvider(user.getSocialLoginId(), user.getAuthProvider());
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("로그인 정보[SOCIAL_LOGIN_ID, AUTH_PROVIDER]가 올바르지 않습니다.");
   }
 
   @Test
@@ -147,15 +137,12 @@ public class UserServiceTest {
     //given
     given(userRepository.existsById(any()))
         .willReturn(false);
-    //when
-    Exception exception = Assertions.assertThrows(
-        CustomException.class,
-        () -> userService.existsById(any())
-    );
-
-    //then
-    assertThat(exception.getMessage()).isEqualTo("해당 유저 정보를 찾을 수 없습니다.");
-
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.existsById(userId);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("해당 유저 정보를 찾을 수 없습니다.");
   }
 
   @Test
@@ -166,10 +153,10 @@ public class UserServiceTest {
     given(userRepository.findById(any()))
         .willReturn(Optional.of(user));
     //when
-    User findUser = userService.findById(user.getId());
+    User foundUser = userService.findById(user.getId());
 
     //then
-    assertThat(findUser).isNotNull();
+    assertThat(foundUser).isEqualTo(user);
 
   }
 
@@ -178,16 +165,18 @@ public class UserServiceTest {
   void findByIdWithNonexistentUser() {
     //given
     given(userRepository.findById(any()))
-        .willReturn(Optional.ofNullable(null));
-    //when
+        .willReturn(Optional.empty());
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.findById(userId);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("해당 유저 정보를 찾을 수 없습니다.");
+
     Exception exception = Assertions.assertThrows(
         CustomException.class,
         () -> userService.findById(any())
     );
-
-    //then
-    assertEquals("해당 유저 정보를 찾을 수 없습니다.", exception.getMessage());
-
   }
 
   @Test
@@ -215,8 +204,25 @@ public class UserServiceTest {
   }
 
   @Test
-  @DisplayName("setSetting메서드는 유저 설정 정보를 변경한다")
-  void setSetting() {
+  @DisplayName("getSetting메서드는 존재하지 않는 유저라면 예외를 던진다")
+  void getSettingWithNonexistentUser() {
+    //given
+    long userId = 1l;
+    given(userRepository.findById(anyLong()))
+        .willReturn(Optional.empty());
+
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.getSetting(userId);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("해당 유저 정보를 찾을 수 없습니다.");
+
+  }
+
+  @Test
+  @DisplayName("setSetting메서드는 존재하지 않는 유저라면 예외를 던진다")
+  void setSettingWithNonexistentUser() {
     //given
     long userId = 1l;
     SettingRequestDto settingRequestDto = new SettingRequestDto(
@@ -224,28 +230,15 @@ public class UserServiceTest {
         "newName",
         List.of(tag.getName())
     );
-    String publicId = "default";
-    String profile = "profile";
 
     given(userRepository.findById(anyLong()))
-        .willReturn(Optional.of(user));
-    given(tagRepository.findAllByNameIn(anyList()))
-        .willReturn(List.of(tag));
-    given(userTechStackRepository.saveAll(anyList()))
-        .willReturn(List.of(userTechStack));
-    given(userRepository.existsByNickname(anyString()))
-        .willReturn(false);
-    given(cloudinaryUtil.findFileURL(anyString()))
-        .willReturn(profile);
+        .willReturn(Optional.empty());
 
-    //when
-    SettingResponseDto result = userService.setSetting(userId, settingRequestDto);
-
-    //then
-    assertThat(result
-                   .getTags()
-                   .size()).isEqualTo(1);
-    assertThat(result.getNickname()).isEqualTo(user.getNickname());
-    assertThat(result.getProfile()).isEqualTo(profile);
+    //when, then
+    assertThatThrownBy(() -> {
+      userService.setSetting(userId, settingRequestDto);
+    })
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining("해당 유저 정보를 찾을 수 없습니다.");
   }
 }

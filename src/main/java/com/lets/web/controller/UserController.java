@@ -37,7 +37,7 @@ public class UserController {
   @GetMapping("/myPosts")
   @PreAuthorize("hasRole('ROLE_USER')")
   public List<PostResponseDto> findMyPosts(@AuthenticationPrincipal UserPrincipal principal) {
-    return postService.findPosts(principal.getId());
+    return postService.findUserPosts(principal.getId());
   }
 
   /**

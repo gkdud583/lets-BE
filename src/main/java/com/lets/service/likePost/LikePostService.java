@@ -12,7 +12,6 @@ import com.lets.domain.likePost.LikePostRepository;
 import com.lets.domain.post.Post;
 import com.lets.domain.postTechStack.PostTechStack;
 import com.lets.domain.postTechStack.PostTechStackRepository;
-import com.lets.domain.tag.Tag;
 import com.lets.domain.user.User;
 import com.lets.service.user.UserService;
 import com.lets.web.dto.likepost.LikePostResponseDto;
@@ -30,6 +29,7 @@ public class LikePostService {
   public List<LikePost> findAllByUser(User user) {
     return likePostRepository.findAllByUser(user);
   }
+
 
   public List<LikePostResponseDto> findLikePosts(long userId) {
 
@@ -55,22 +55,28 @@ public class LikePostService {
     List<PostTechStack> postTechStacks = postTechStackRepository.findAllByPosts(posts);
 
     //post의 태그정보 조립
-    ArrayList<LikePostResponseDto> likePostDtos = new ArrayList<>();
+    List<LikePostResponseDto> likePostDtos = new ArrayList<>();
     for (LikePost likePost : likePosts) {
-      List<Tag> tags = postTechStacks
+      List<String> tags = postTechStacks
           .stream()
           .filter(postTechStack -> postTechStack
               .getPost()
               .getId() == likePost
               .getPost()
               .getId())
-          .map(postTechStack -> postTechStack.getTag())
+          .map(postTechStack -> postTechStack.getTag().getName())
           .collect(Collectors.toList());
-      likePostDtos.add(LikePostResponseDto.likePostToDto(
-          likePost.getPost(),
+      likePostDtos.add(LikePostResponseDto.from(
+          likePost.getPost().getId(),
+          likePost.getPost().getTitle(),
+          likePost.getPost().getContent(),
+          likePost.getPost().getLikeCount(),
+          likePost.getPost().getViewCount(),
+          likePost.getPost()
+                  .getStatus(),
           likePost.getStatus(),
           tags
-      ));
+          ));
     }
     return likePostDtos;
   }

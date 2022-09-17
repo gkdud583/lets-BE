@@ -4,15 +4,15 @@ import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SettingRequestDto {
   @NotBlank
-  private String profile;
+  private final String profile;
   @NotBlank
-  private String nickname;
-  private List<String> tags;
+  private final String nickname;
+  private final List<String> tags;
 }

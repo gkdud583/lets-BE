@@ -44,15 +44,13 @@ public class UserRepositoryTest {
     userRepository.save(user);
 
     //when
-    Optional<User> findUser = userRepository.findBySocialLoginIdAndAuthProvider(
+    Optional<User> foundUser = userRepository.findBySocialLoginIdAndAuthProvider(
         user.getSocialLoginId(),
         user.getAuthProvider()
     );
 
     //then
-    assertThat(findUser
-                   .get()
-                   .getNickname()).isEqualTo("user1");
+    assertThat(foundUser.get().getId()).isEqualTo(user.getId());
   }
 
   @DisplayName("existsByNickname메서드는 닉네임으로 유저가 존재하는지 확인한다")
