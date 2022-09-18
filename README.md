@@ -23,3 +23,6 @@
 ## API 문서
 
 [https://documenter.getpostman.com/view/16547663/Uyxeq97D](https://documenter.getpostman.com/view/16547663/Uyxeq97D)
+
+## 프로젝트 정리 노션
+https://extreme-moss-085.notion.site/20faa1948aa0450dad5d3ec71b5129bb
